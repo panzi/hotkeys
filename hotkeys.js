@@ -12,102 +12,146 @@
 	// $(window).hotkeys('clear');
 
 	// hopefully common subset keyboard layout:
-	var KeyNames = {
-		  8: 'Backspace',
-		  9: 'Tab',
-		 13: 'Enter',
-		 16: 'Shift',
-		 17: 'Ctrl',
-		 18: 'Alt',
-		 19: 'Pause',
-		 20: 'Capslock',
-		 27: 'Esc',
-		 32: 'Space',
-		 33: 'Page\u00a0Up',
-		 34: 'Page\u00a0Down',
-		 35: 'End',
-		 36: 'Home',
-		 37: 'Left',
-		 38: 'Up',
-		 39: 'Right',
-		 40: 'Down',
-		 42: 'Print',
-		 45: 'Ins',
-		 46: 'Del',
-		 91: 'Left\u00a0Meta',
-		 92: 'Right\u00a0Meta',
-		 93: 'Select',
-		 96: 'Numpad\u00a00',
-		 97: 'Numpad\u00a01',
-		 98: 'Numpad\u00a02',
-		 99: 'Numpad\u00a03',
-		100: 'Numpad\u00a04',
-		101: 'Numpad\u00a05',
-		102: 'Numpad\u00a06',
-		103: 'Numpad\u00a07',
-		104: 'Numpad\u00a08',
-		105: 'Numpad\u00a09',
-		106: 'Numpad\u00a0*',
-		107: 'Numpad\u00a0+',
-		108: 'Numpad\u00a0-',
-		109: 'Numpad\u00a0.', // could not reproduce
-		111: 'Numpad\u00a0/',
-		112: 'F1',
-		113: 'F2',
-		114: 'F3',
-		115: 'F4',
-		116: 'F5',
-		117: 'F6',
-		118: 'F7',
-		119: 'F8',
-		120: 'F9',
-		121: 'F10',
-		122: 'F11',
-		123: 'F12',
-		144: 'Numlock',
-		145: 'Scroll\u00a0Lock'
-	};
-
-	var Keys = {
-		// aliases:
-		'escape': 27,
-		'insert': 45,
-		'delete': 46
+	var defaultLayout = {
+		keys: {
+			  3: 'Cancel',
+			  6: 'Help',
+			  8: 'Backspace',
+			  9: 'Tab',
+			 12: 'Clear',
+			 13: 'Return',
+			 14: 'Enter',
+			 16: 'Shift',
+			 17: 'Ctrl',
+			 18: 'Alt',
+			 19: 'Pause',
+			 20: 'Caps\u00a0Lock',
+			 27: 'Escape',
+			 32: 'Space',
+			 33: 'Page\u00a0Up',
+			 34: 'Page\u00a0Down',
+			 35: 'End',
+			 36: 'Home',
+			 37: 'Left',
+			 38: 'Up',
+			 39: 'Right',
+			 40: 'Down',
+			 41: 'Select',
+			 42: 'Print',
+			 43: 'Execute',
+			 44: 'Print\u00a0Screen',
+			 45: 'Insert',
+			 46: 'Delete',
+			 91: 'Left\u00a0Meta',
+			 92: 'Right\u00a0Meta',
+			 93: 'Context\u00a0Menu',
+			 96: 'Numpad\u00a00',
+			 97: 'Numpad\u00a01',
+			 98: 'Numpad\u00a02',
+			 99: 'Numpad\u00a03',
+			100: 'Numpad\u00a04',
+			101: 'Numpad\u00a05',
+			102: 'Numpad\u00a06',
+			103: 'Numpad\u00a07',
+			104: 'Numpad\u00a08',
+			105: 'Numpad\u00a09',
+			106: 'Multiply',
+			107: 'Add',
+			109: 'Subtract',
+			110: 'Decimal',
+			111: 'Divide',
+			144: 'Num\u00a0Lock',
+			145: 'Scroll\u00a0Lock',
+			224: 'Meta',
+			225: 'Alt\u00a0Gr'
+		},
+		aliases: {
+			esc: 27,
+			ins: 45,
+			del: 46
+		},
+		modifiers: {
+			ctrlKey:     'Ctrl',
+			altKey:      'Alt',
+			shiftKey:    'Shift',
+			metaKey:     'Meta',
+			altGraphKey: 'Alt\u00a0Graph'
+		},
+		modifierKeys: {
+			 16: 'shiftKey',
+			 17: 'ctrlKey',
+			 18: 'altKey',
+			 91: 'metaKey',
+			 92: 'metaKey',
+			224: 'metaKey',
+			225: 'altGraphKey'
+		},
+		modifierAliases: {
+			'cmd':         'metaKey',
+			'altgr':       'altGraphKey',
+			'alt\u00a0gr': 'altGraphKey',
+		}
 	};
 
 	(function () {
+		// alpha numerical keys
 		for (var ch = '0'.charCodeAt(0), last = 'z'.charCodeAt(0); ch <= last; ++ ch) {
-			KeyNames[ch] = String.fromCharCode(ch).toUpperCase();
+			defaultLayout.keys[ch] = String.fromCharCode(ch).toUpperCase();
 		}
 
-		for (var key in KeyNames) {
-			var name = KeyNames[key].toLowerCase();
-			var alias = name.replace(/\u00a0/g,"");
-			Keys[name] = key = Number(key);
-			if (name !== alias) {
-				Keys[alias] = key;
-			}
+		// function keys
+		for (var i = 1; i <= 24; ++ i) {
+			defaultLayout.keys[111 + i] = 'F'+i;
 		}
 	})();
 
-	var Modifiers = {
-		'ctrl':           'ctrlKey',
-		'alt':            'altKey',
-		'shift':          'shiftKey',
-		'meta':           'metaKey',
-		'altgr':          'altGraphKey',
-		'altgraph':       'altGraphKey',
-		'alt\u00a0graph': 'altGraphKey'
+	var currentLayout;
+	var Keys;
+	var KeyNames;
+	var Modifiers;
+	var ModifierKeys;
+	var ModifierNames;
+
+	setLayout(defaultLayout);
+
+	function setLayout (layout) {
+		currentLayout = layout;
+		KeyNames      = $.extend({}, layout.keys);
+		Keys          = $.extend({}, layout.aliases);
+		Modifiers     = $.extend({}, layout.modifierAliases);
+		ModifierKeys  = $.extend({}, layout.modifierKeys);
+		ModifierNames = $.extend({}, defaultLayout.modifiers, layout.modifiers);
+
+		for (var key in layout.keys) {
+			addKey(Keys, Number(key), layout.keys[key]);
+		}
+
+		for (var key in layout.modifiers) {
+			addKey(Modifiers, key, layout.modifiers[key]);
+		}
+	}
+
+	function addKey (keys, key, name) {
+		if (name !== '-' && /[- \t\n\r\v]/.test(name)) {
+			throw new SyntaxError('illegal key name '+name+': key names may not include breakable spaces (" \\t\\n\\r\\v") or dashes ("-").');
+		}
+		else if (/^K\+[0-9A-F]+$/i.test(name)) {
+			throw new SyntaxError('illegal key name '+name+': key names may not be ot the format K+XXX (where XXX is a hexadecimal number).');
+		}
+		name = name.toLowerCase();
+		keys[name.replace(/\u00a0/g,"")] = keys[name] = key;
+	}
+
+	function Hotkey () {
+		this.keyCode     = null;
+		this.metaKey     = false;
+		this.ctrlKey     = false;
+		this.altKey      = false;
+		this.altGraphKey = false;
+		this.shiftKey    = false;
 	};
-	
-	var ModifierKeys = {
-		 17: 'ctrlKey',
-		 18: 'altKey',
-		 16: 'shiftKey',
-		 91: 'metaKey',
-		 92: 'metaKey'
-		// XXX: Alt Gr?
-	};
+
+	Hotkey.prototype.toString = function () { return makekey(this); };
 
 	function parsekey (hotkey) {
 		hotkey = $.trim(hotkey);
@@ -135,14 +179,7 @@
 			syms.push(lower);
 		}
 
-		var parsed = {
-			keyCode:     null,
-			metaKey:     false,
-			ctrlKey:     false,
-			altKey:      false,
-			altGraphKey: false,
-			shiftKey:    false
-		};
+		var parsed = new Hotkey();
 
 		for (var i = 0; i < syms.length; ++ i) {
 			var sym = syms[i];
@@ -150,25 +187,27 @@
 			if (Modifiers.hasOwnProperty(sym)) {
 				parsed[Modifiers[sym]] = true;
 			}
-			else if (/^K\+[0-9A-F]+$/i.test(sym)) {
-				keyCode = parseInt(sym.slice(2),16);
+			else if (Keys.hasOwnProperty(sym)) {
+				keyCode = Keys[sym];
 				if (parsed.keyCode !== null && parsed.keyCode !== keyCode) {
 					throw new SyntaxError("illegal hotkey "+hotkey+": hotkey musst contain exactly one non-modifier key");
 				}
-
 				parsed.keyCode = keyCode;
 			}
-			else {
-				if (Keys.hasOwnProperty(sym)) {
-					keyCode = Keys[sym];
-					if (parsed.keyCode !== null && parsed.keyCode !== keyCode) {
-						throw new SyntaxError("illegal hotkey "+hotkey+": hotkey musst contain exactly one non-modifier key");
-					}
-					parsed.keyCode = keyCode;
+			else if (/^K\+[0-9A-F]+$/i.test(sym)) {
+				keyCode = parseInt(sym.slice(2),16);
+				if (ModifierKeys.hasOwnProperty(keyCode)) {
+					parsed[ModifierKeys[keyCode]] = true;
+				}
+				else if (parsed.keyCode !== null && parsed.keyCode !== keyCode) {
+					throw new SyntaxError("illegal hotkey "+hotkey+": hotkey musst contain exactly one non-modifier key");
 				}
 				else {
-					throw new SyntaxError("illegal hotkey "+hotkey+": unknown key name "+sym);
+					parsed.keyCode = keyCode;
 				}
+			}
+			else {
+				throw new SyntaxError("illegal hotkey "+hotkey+": unknown key name "+sym);
 			}
 		}
 
@@ -180,23 +219,31 @@
 	}
 
 	function parseEvent (event) {
-		return {
-			keyCode:       event.keyCode,
-			metaKey:       event.metaKey,
-			ctrlKey:       event.ctrlKey,
-			altKey:        event.altKey,
-			shiftKey:      event.shiftKey,
-			altGraphKey: !!event.originalEvent.altGraphKey // currently buggy
-		};
+		var hotkey = new Hotkey();
+		hotkey.keyCode  = event.keyCode;
+		hotkey.metaKey  = event.metaKey;
+		hotkey.ctrlKey  = event.ctrlKey;
+		hotkey.altKey   = event.altKey;
+		hotkey.shiftKey = event.shiftKey;
+		
+		// currently buggy in browsers:
+		if ('altGraphKey' in event) {
+			hotkey.altGraphKey = event.altGraphKey;
+		}
+		else if (event.originalEvent) {
+			hotkey.altGraphKey = !!event.originalEvent.altGraphKey;
+		}
+
+		return hotkey;
 	}
 
 	function makekey (hotkey) {
 		var normed = [];
-		if (hotkey.metaKey)     normed.push("Meta");
-		if (hotkey.ctrlKey)     normed.push("Ctrl");
-		if (hotkey.altKey)      normed.push("Alt");
-		if (hotkey.altGraphKey) normed.push("Alt\u00a0Gr");
-		if (hotkey.shiftKey)    normed.push("Shift");
+		if (hotkey.ctrlKey)     normed.push(ModifierNames.ctrlKey);
+		if (hotkey.metaKey)     normed.push(ModifierNames.metaKey);
+		if (hotkey.altKey)      normed.push(ModifierNames.altKey);
+		if (hotkey.altGraphKey) normed.push(ModifierNames.altGraphKey);
+		if (hotkey.shiftKey)    normed.push(ModifierNames.shiftKey);
 
 		if (KeyNames.hasOwnProperty(hotkey.keyCode)) {
 			normed.push(KeyNames[hotkey.keyCode]);
@@ -213,11 +260,13 @@
 	}
 
 	function normseq (hotkey_seq) {
-		return $.map(parseseq(hotkey_seq), makekey).join(' ');
+		return parseseq(hotkey_seq).toString();
 	}
 
 	function parseseq (hotkey_seq) {
-		return $.map($.trim(hotkey_seq).split(/[ \t\r\n\v]+/), parsekey);
+		var seq = $.map($.trim(hotkey_seq).split(/[ \t\r\n\v]+/), parsekey);
+		seq.toString = sequenceToString;
+		return seq;
 	}
 
 	function values (obj) {
@@ -235,6 +284,10 @@
 		}
 		return keys;
 	};
+
+	function sequenceToString () {
+		return $.map(this, makekey).join(' ');
+	}
 
 	function keydown (event) {
 		if (ModifierKeys.hasOwnProperty(event.keyCode) && event[ModifierKeys[event.keyCode]]) {
@@ -256,8 +309,9 @@
 		if (node) {
 			event.preventDefault();
 			event.stopPropagation();
-			hotkeys.sequence.push({node: node, hotkey: hotkey});
-			var hotkey_seq = $.map(hotkeys.sequence, function (el) { return el.hotkey; }).join(' ');
+			hotkeys.sequence.push({node: node, hotkey: parsed});
+			var hotkey_seq = $.map(hotkeys.sequence, function (el) { return $.extend({},el.hotkey); });
+			hotkey_seq.toString = sequenceToString;
 			if (node.action) {
 				var action = hotkeys.actions[node.action];
 				var evt = $.Event(event, {type:'hotkey', hotkey:hotkey_seq, action:node.action});
@@ -285,7 +339,8 @@
 	}
 
 	function _abort (hotkeys, event) {
-		var hotkey_seq = $.map(hotkeys.sequence, function (el) { return el.hotkey; }).join(' ');
+		var hotkey_seq = $.map(hotkeys.sequence, function (el) { return $.extend({},el.hotkey); });
+		hotkey_seq.toString = sequenceToString;
 		hotkeys.sequence = [];
 		var evt = $.Event(event, {type:'hotkey:abort-composition', hotkey:hotkey_seq});
 		$(this).trigger(evt);
@@ -491,10 +546,14 @@
 		}
 	};
 
-	$.fn.hotkeys.norm          = normkey;
-	$.fn.hotkeys.normSequence  = normseq;
-	$.fn.hotkeys.make          = makekey;
-	$.fn.hotkeys.parse         = parsekey;
-	$.fn.hotkeys.parseSequence = parseseq;
-	$.fn.hotkeys.parseEvent    = parseEvent;
+	$.hotkeys = {
+		norm:          normkey,
+		normSequence:  normseq,
+		stringify:     function (hotkey) { return $.isArray(hotkey) ? $.map(hotkey, makekey).join(' ') : makekey(hotkey); },
+		parse:         parsekey,
+		parseSequence: parseseq,
+		parseEvent:    parseEvent,
+		setLayout:     setLayout,
+		getLayout:     function () { return currentLayout; }
+	};
 })(jQuery);
