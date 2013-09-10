@@ -11,11 +11,13 @@
 	// $(window).hotkeys('actions') -> {'delete': {name: 'delete', lable: 'Delete', ... }, ... }
 	// $(window).hotkeys('clear') -> this
 
+	var Mac     = /^(Mac|iPhone|iPad|iOS)/i.test(navigator.platform);
+	var Windows = /^Win/i.test(navigator.platform);
+
 	// hopefully common subset keyboard layout:
 	var defaultLayout = {
 		keys: {
 			  3: 'Cancel',
-			  6: 'Help',
 			  8: 'Backspace',
 			  9: 'Tab',
 			 12: 'Clear',
@@ -23,7 +25,7 @@
 			 14: 'Enter',
 			 16: 'Shift',
 			 17: 'Ctrl',
-			 18: 'Alt',
+			 18: Mac ? 'Option' : 'Alt',
 			 19: 'Pause',
 			 20: 'Caps\u00a0Lock',
 			 27: 'Escape',
@@ -42,8 +44,9 @@
 			 44: 'Print\u00a0Screen',
 			 45: 'Insert',
 			 46: 'Delete',
-			 91: 'Left\u00a0Meta',
-			 92: 'Right\u00a0Meta',
+			 47: 'Help',
+			 91: Windows ? 'Left\u00a0Win'  : Mac ? 'Left\u00a0Cmd'  : 'Left\u00a0Meta',
+			 92: Windows ? 'Right\u00a0Win' : Mac ? 'Right\u00a0Cmd' : 'Right\u00a0Meta',
 			 93: 'Context\u00a0Menu',
 			 96: 'Numpad\u00a00',
 			 97: 'Numpad\u00a01',
@@ -62,8 +65,30 @@
 			111: 'Divide',
 			144: 'Num\u00a0Lock',
 			145: 'Scroll\u00a0Lock',
-			224: 'Meta',
-			225: 'Alt\u00a0Gr'
+			162: 'Left\u00a0Control',
+			163: 'Right\u00a0Control',
+//			164: 'Left\u00a0Alt',
+//			165: 'Right\u00a0Alt',
+			166: 'Browser\u00a0Back',
+			167: 'Browser\u00a0Forward',
+			168: 'Browser\u00a0Refresh',
+			169: 'Browser\u00a0Stop',
+			170: 'Browser\u00a0Search',
+			171: 'Browser\u00a0Favorites',
+			172: 'Browser\u00a0Home',
+			173: 'Volume\u00a0Mute',
+			174: 'Volume\u00a0Down',
+			175: 'Volume\u00a0Up',
+			176: 'Media\u00a0Next\u00a0Track',
+			177: 'Media\u00a0Previous\u00a0Track',
+			178: 'Media\u00a0Stop',
+			179: 'Media\u00a0Play\u00a0Pause',
+			180: 'Launch\u00a0Mail',
+			181: 'Select\u00a0Media',
+			224: Windows ? 'Win' : Mac ? 'Cmd' : 'Meta',
+			225: 'Alt\u00a0Gr',
+			250: 'Play',
+			251: 'Zoom'
 		},
 		aliases: {
 			esc: 27,
@@ -72,9 +97,9 @@
 		},
 		modifiers: {
 			ctrlKey:     'Ctrl',
-			altKey:      'Alt',
+			altKey:      Mac ? 'Option' : 'Alt',
 			shiftKey:    'Shift',
-			metaKey:     'Meta',
+			metaKey:     Windows ? 'Win' : Mac ? 'Cmd' : 'Meta',
 			altGraphKey: 'Alt\u00a0Graph'
 		},
 		modifierKeys: {
@@ -83,11 +108,21 @@
 			 18: 'altKey',
 			 91: 'metaKey',
 			 92: 'metaKey',
+			162: 'ctrlKey',
+			163: 'ctrlKey',
+//			164: 'altKey',
+//			165: 'altKey',
 			224: 'metaKey',
 			225: 'altGraphKey'
 		},
 		modifierAliases: {
 			'cmd':         'metaKey',
+			'command':     'metaKey',
+			'win':         'metaKey',
+			'windows':     'metaKey',
+			'meta':        'metaKey',
+			'os':          'metaKey',
+			'option':      'altKey',
 			'altgr':       'altGraphKey',
 			'alt\u00a0gr': 'altGraphKey',
 		}
@@ -112,15 +147,13 @@
 	var ModifierKeys;
 	var ModifierNames;
 
-	setLayout(defaultLayout);
-
 	function setLayout (layout) {
 		currentLayout = layout;
 		KeyNames      = $.extend({}, layout.keys);
 		Keys          = $.extend({}, layout.aliases);
 		Modifiers     = $.extend({}, layout.modifierAliases);
 		ModifierKeys  = $.extend({}, layout.modifierKeys);
-		ModifierNames = $.extend({}, defaultLayout.modifiers, layout.modifiers);
+		ModifierNames = $.extend({}, $.hotkeys.defaultLayout.modifiers, layout.modifiers);
 
 		for (var key in layout.keys) {
 			addKey(Keys, Number(key), layout.keys[key]);
@@ -566,6 +599,9 @@
 		parseSequence: parseseq,
 		parseEvent:    parseEvent,
 		setLayout:     setLayout,
-		getLayout:     function () { return currentLayout; }
+		getLayout:     function () { return currentLayout; },
+		defaultLayout: defaultLayout
 	};
+
+	setLayout(defaultLayout);
 })(jQuery);
