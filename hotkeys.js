@@ -5,11 +5,11 @@
 	// $(window).hotkeys('bind',    'Ctrl-D',   'delete') -> this
 	// $(window).hotkeys('bind',    'Ctrl-M D', 'delete') -> this
 	// $(window).hotkeys('unbind',  'Ctrl-M D') -> this
-	// $(window).hotkeys('hotkeys') -> ['Ctrl-D', ...]
-	// $(window).hotkeys('hotkeys', 'delete') -> ['Ctrl-D']
+	// $(window).hotkeys('bindings', 'delete') -> ['Ctrl-D']
+	// $(window).hotkeys('bindings') -> {'delete':['Ctrl-D'], ...}
 	// $(window).hotkeys('action',  'Ctrl-D') -> {name: 'delete', lable: 'Delete', action: function () {}} or null
-	// $(window).hotkeys('actions') -> ['delete', ...]
-	// $(window).hotkeys('clear');
+	// $(window).hotkeys('actions') -> {'delete': {name: 'delete', lable: 'Delete', ... }, ... }
+	// $(window).hotkeys('clear') -> this
 
 	// hopefully common subset keyboard layout:
 	var defaultLayout = {
@@ -220,7 +220,14 @@
 
 	function parseEvent (event) {
 		var hotkey = new Hotkey();
-		hotkey.keyCode  = event.keyCode;
+
+		if (ModifierKeys.hasOwnProperty(event.keyCode)) {
+			hotkey.keyCode = null;
+		}
+		else {
+			hotkey.keyCode = event.keyCode;
+		}
+
 		hotkey.metaKey  = event.metaKey;
 		hotkey.ctrlKey  = event.ctrlKey;
 		hotkey.altKey   = event.altKey;
@@ -245,11 +252,13 @@
 		if (hotkey.altGraphKey) normed.push(ModifierNames.altGraphKey);
 		if (hotkey.shiftKey)    normed.push(ModifierNames.shiftKey);
 
-		if (KeyNames.hasOwnProperty(hotkey.keyCode)) {
-			normed.push(KeyNames[hotkey.keyCode]);
-		}
-		else {
-			normed.push('K+'+hotkey.keyCode.toString(16).toUpperCase());
+		if (hotkey.keyCode !== null) {
+			if (KeyNames.hasOwnProperty(hotkey.keyCode)) {
+				normed.push(KeyNames[hotkey.keyCode]);
+			}
+			else {
+				normed.push('K+'+hotkey.keyCode.toString(16).toUpperCase());
+			}
 		}
 
 		return normed.join('-');
@@ -290,12 +299,13 @@
 	}
 
 	function keydown (event) {
-		if (ModifierKeys.hasOwnProperty(event.keyCode) && event[ModifierKeys[event.keyCode]]) {
+		var parsed = parseEvent(event);
+
+		if (parsed.keyCode === null) {
 			return;
 		}
 
 		var hotkeys = $.data(this,'hotkeys');
-		var parsed  = parseEvent(event);
 		var hotkey  = makekey(parsed);
 
 		var node;
@@ -431,24 +441,6 @@
 		}
 	}
 
-	function allHotkeys (hotkeys) {
-		var all = [];
-		_allHotkeys(hotkeys.hotkeys, [], all);
-		return all;
-	}
-
-	function _allHotkeys (hotkeys, comp, all) {
-		for (var hotkey in hotkeys) {
-			var node = hotkeys[hotkey];
-			comp.push(hotkey);
-			if (node.action) {
-				all.push(comp.join(' '));
-			}
-			_allHotkeys(node.hotkeys, comp, all);
-			comp.pop();
-		}
-	}
-	
 	function actionHotkeys (hotkeys, action) {
 		var all = [];
 		_actionHotkeys(hotkeys.hotkeys, action, [], all);
@@ -463,6 +455,31 @@
 				all.push(comp.join(' '));
 			}
 			_actionHotkeys(node.hotkeys, action, comp, all);
+			comp.pop();
+		}
+	}
+
+	function actionsWithHotkeys (hotkeys) {
+		var actions = {};
+		for (var action in hotkeys.actions) {
+			actions[action] = [];
+		}
+		_actionsWithHotkeys(hotkeys.hotkeys, [], actions);
+		return actions;
+	}
+	
+	function _actionsWithHotkeys (hotkeys, comp, actions) {
+		for (var hotkey in hotkeys) {
+			var node = hotkeys[hotkey];
+			comp.push(hotkey);
+			if (node.action) {
+				var action_hotkeys = actions[node.action];
+				if (!$.isArray(action_hotkeys)) {
+					action_hotkeys = actions[node.action] = [];
+				}
+				action_hotkeys.push(comp.join(' '));
+			}
+			_actionsWithHotkeys(node.hotkeys, comp, actions);
 			comp.pop();
 		}
 	}
@@ -513,7 +530,7 @@
 				unbind(this, arguments[1]);
 				return this;
 
-			case 'hotkeys':
+			case 'bindings':
 				hotkeys = this.data('hotkeys');
 				if (!hotkeys) {
 					return [];
@@ -522,22 +539,17 @@
 					return actionHotkeys(hotkeys, arguments[1]);
 				}
 				else {
-					return allHotkeys(hotkeys);
+					return actionsWithHotkeys(hotkeys);
 				}
 
 			case 'actions':
 				hotkeys = this.data('hotkeys');
-				if (hotkeys) {
-					return keys(hotkeys.actions);
-				}
-				return [];
+				return hotkeys ? hotkeys.actions : {};
 
 			case 'clear':
 				hotkeys = this.data('hotkeys');
 				if (hotkeys) {
-					this.off('blur click',abort).
-						off('keydown',keydown).
-						removeData('hotkeys');
+					this.off('blur click',abort).off('keydown',keydown).removeData('hotkeys');
 				}
 				return this;
 
