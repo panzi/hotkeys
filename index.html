@@ -3,17 +3,12 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
 <title>Hotkeys</title>
+<link rel="stylesheet" type="text/css" href="hotkeys.config.css"/>
 <style type="text/css">
-#inputs,
-.hotkey-config .hotkeys {
+#inputs {
 	list-style: none;
 	margin: 0;
 	padding: 0;
-}
-.hotkey-config .hotkeys li {
-	display: inline;
-	margin: 0 1em 0 0;
-	white-space: nowrap;
 }
 #inputs li {
 	display: inline-block;
@@ -23,16 +18,12 @@
 </style>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
 <script type="text/javascript" src="hotkeys.js"></script>
+<script type="text/javascript" src="hotkeys.config.js"></script>
 <script type="text/javascript" src="main.js"></script>
 </head>
 <body>
 <h1>Hotkeys</h1>
-<table id="config" class="hotkey-config">
-<thead>
-<tr><th>Action</th><th>Shortcuts</th><th></th><th></th></tr>
-</thead>
-<tbody></tbody>
-</table>
+<div id="config"></div>
 <ul id="inputs">
 <li><label>Can't type "X":<br/><textarea id="normal-text" autofocus></textarea></label></li>
 <li><label>Block shortcuts without modifiers:<br/><textarea id="protected-text"></textarea></label></li>
