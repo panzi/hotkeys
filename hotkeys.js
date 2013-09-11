@@ -5,6 +5,7 @@
 	// $(window).hotkeys('bind',    'Ctrl-D',   'delete') -> this
 	// $(window).hotkeys('bind',    'Ctrl-M D', 'delete') -> this
 	// $(window).hotkeys('unbind',  'Ctrl-M D') -> this
+	// $(window).hotkeys('unbind',  'Ctrl-M D', 'delete') -> this
 	// $(window).hotkeys('bindings', 'delete') -> ['Ctrl-D']
 	// $(window).hotkeys('bindings') -> {'delete':['Ctrl-D'], ...}
 	// $(window).hotkeys('action',  'Ctrl-D') -> {name: 'delete', lable: 'Delete', action: function () {}} or null
@@ -445,28 +446,28 @@
 		node.action = action;
 	}
 
-	function unbind (ctx, hotkey_seq) {
+	function unbind (ctx, hotkey_seq, action) {
 		var hotkeys = ctx.data('hotkeys');
 		if (hotkeys) {
-			_unbind(hotkeys, $.map($.trim(hotkey_seq).split(/[ \t\r\n\v]+/), normkey), 0);
+			_unbind(hotkeys, $.map($.trim(hotkey_seq).split(/[ \t\r\n\v]+/), normkey), 0, action)
 		}
 	}
 
-	function _unbind (node, hotkey_seq, index) {
-		var next;
+	function _unbind (node, hotkey_seq, index, action) {
 		var hotkey = hotkey_seq[index];
 		if (hotkey in node.hotkeys) {
-			next = node.hotkeys[hotkey];
+			var next = node.hotkeys[hotkey];
 			++ index;
 			if (index >= hotkey_seq.length) {
-				next.action;
-				delete next.action;
-				if ($.isEmptyObject(next.hotkeys)) {
-					delete node.hotkeys[hotkey];
+				if (!action || next.action === action) {
+					delete next.action;
+					if ($.isEmptyObject(next.hotkeys)) {
+						delete node.hotkeys[hotkey];
+					}
 				}
 			}
 			else {
-				_unbind(next, hotkey_seq, index);
+				_unbind(next, hotkey_seq, index, action);
 				if (!next.action && $.isEmptyObject(next.hotkeys)) {
 					delete node.hotkeys[hotkey];
 				}
@@ -560,7 +561,7 @@
 				return this;
 
 			case 'unbind':
-				unbind(this, arguments[1]);
+				unbind(this, arguments[1], arguments[2]);
 				return this;
 
 			case 'bindings':
@@ -586,10 +587,27 @@
 				}
 				return this;
 
+			case 'protect':
+				return $(this).keydown(arguments[1] ? fullProtectKeydown : protectKeydown);
+
+			case 'unprotect':
+				return $(this).off('keydown',arguments[1] ? fullProtectKeydown : protectKeydown);
+
 			default:
 				throw new TypeError("unknown method: "+method);
 		}
 	};
+
+	function protectKeydown (event) {
+		var hotkey = parseEvent(event);
+		if (hotkey.keyCode && !(hotkey.ctrlKey || hotkey.altKey || hotkey.metaKey || hotkey.altGraphKey || hotkey.shiftKey)) {
+			event.stopPropagation();
+		}
+	}
+
+	function fullProtectKeydown (event) {
+		event.stopPropagation();
+	}
 
 	$.hotkeys = {
 		norm:          normkey,

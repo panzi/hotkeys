@@ -8,7 +8,7 @@ function handler (event) {
 }
 
 $(window).
-	hotkeys('action', {name: 'Foo', action: handler, default: 'Alt-M'}).
+	hotkeys('action', {name: 'Foo', action: handler, defaultHotkey: 'Alt-M'}).
 	hotkeys('action', 'Bar', handler).
 	hotkeys('action', 'Baz', handler).
 	hotkeys('action', 'Bla', handler).
@@ -23,15 +23,14 @@ $(window).
 	hotkeys('bind', 'Y',                'Baz').
 	hotkeys('unbind', 'Y').
 	on('hotkey:compose', function (event) {
-		$('#compose').text($.hotkeys.stringify(event.hotkey) + ' ...');
+		$('#compose').text(event.hotkey + ' ...');
 	}).
 	on('hotkey:abort-composition', function (event) {
 		$('#compose').text('');
 	}).
 	on('hotkey', function (event) {
 		$('#compose').text('');
-		log($.hotkeys.stringify(event.hotkey) + ' -> ' +
-		    event.action + ' (via jQuery event system)');
+		log(event.hotkey + ' -> ' + event.action + ' (via jQuery event system)');
 	});
 
 console.log($(window).hotkeys('bindings'));
@@ -54,7 +53,7 @@ $(document).ready(function () {
 		var action = actions[actionName];
 		if (action) {
 			var hotkeys = bindings[actionName].sort();
-			var tr = $('<tr>',{'data-action':actionName});
+			var tr = $('<tr>',{'class':'action','data-action':actionName});
 			var ul = $('<ul>',{'class':'hotkeys'});
 
 			for (var j = 0; j < hotkeys.length; ++ j) {
@@ -69,6 +68,9 @@ $(document).ready(function () {
 			tbody.append(tr);
 		}
 	}
+
+	$('#protected-text').hotkeys('protect');
+	$('#full-protected-text').hotkeys('protect',true);
 });
 
 function renderHotkey (hotkey) {
@@ -84,8 +86,14 @@ function renderHotkey (hotkey) {
 	else {
 		$('<button>',{'class':'change',title:'Click to change hotkey'}).text('...').click(changeHotkey).appendTo(li);
 	}
-	$('<button>',{'class':'compose',title:'Add composition hotkey'}).text('+').click(composeHotkey).appendTo(li);
-	$('<button>',{'class':'remove',title:'Remove hotkey'}).html('&times;').click(removeHotkey).appendTo(li);
+
+	var compose = $('<button>',{'class':'compose',title:'Add composition hotkey'}).text('+').click(composeHotkey).appendTo(li);
+	var remove  = $('<button>',{'class':'remove',title:'Remove hotkey'}).html('&times;').click(removeHotkey).appendTo(li);
+
+	if (!hotkey) {
+		compose.hide();
+		remove.hide();
+	}
 
 	return li;
 }
@@ -115,7 +123,14 @@ function changeHotkey (event) {
 }
 
 function resetHotkeys (event) {
-	// TODO
+	var actionEl   = $(this).parents('.action');
+	var hotkeysEl  = actionEl.first().find('.hotkeys').empty();
+	var actionName = actionEl.attr('data-action');
+	var action = $(window).hotkeys('actions')[actionName];
+
+	if (action && action.defaultHotkey) {
+		hotkeysEl.append(renderHotkey(action.defaultHotkey));
+	}
 }
 
 function keydownHotkey (event) {
@@ -128,32 +143,57 @@ function keydownHotkey (event) {
 	if (hotkey.keyCode === 0) {
 		hotkey.keyCode = null;
 		hotkey = String(hotkey);
-		btn.text(hotkey ? hotkey + '-Unsupported\u00a0Key!' : 'Unsupported\u00a0Key!');
+		btn.text((hotkey ? hotkey + '-' : '') + 'Unsupported\u00a0Key!');
 	}
 	else if (hotkey.keyCode === null) {
 		hotkey = String(hotkey);
 		btn.text(hotkey ? hotkey + '-...' : '...');
 	}
 	else {
-		var li = btn.parents('li');
-		var old = li.attr('data-hotkey');
+		var hotkeyEl = btn.parents('li').first();
+		var actionName = hotkeyEl.parents('.action').attr('data-action');
+		var oldhotkey = hotkeyEl.attr('data-hotkey');
+		var hotkey_seq = [];
+		var self = this;
 
-		// TODO: check for collision
 		hotkey = String(hotkey);
-		btn.off('keydown',keydownHotkey).off('keyup',keyupHotkey).off('blur',blurHotkey).text(hotkey).attr('data-hotkey',hotkey);
-		if (old) {
-			$(window).hotkeys('unbind',old);
-		}
-		hotkey = [];
-		li.find('button.change').each(function () {
-			hotkey.push($.attr(this,'data-hotkey'));
+		hotkeyEl.find('button.change').each(function () {
+			hotkey_seq.push(this === self ? hotkey : $.attr(this,'data-hotkey'));
 		});
-		hotkey = hotkey.join(' ');
-		li.attr('data-hotkey',hotkey);
-		var actionName = li.parents('tr').attr('data-action');
+		hotkey_seq = hotkey_seq.join(' ');
+		var ctx = $(window);
+		var other = ctx.hotkeys('action',hotkey_seq);
+
+		if (other === actionName) {
+			if (hotkey_seq !== oldhotkey) {
+				hotkeyEl.remove();
+			}
+		}
+		else if (other) {
+			var otherAction = ctx.hotkeys('actions')[other];
+			if (confirm(
+					'The hotkey '+hotkey_seq+' is already assigned to the action "'+
+					(otherAction ? otherAction.label : other)+
+					'". Do you want to reasign the hotkey?')) {
+				ctx.hotkeys('unbind',hotkey_seq,other);
+				hotkeyEl.parents('.hotkey-config').first().find('li[data-hotkey]').filter(
+					function () { return $.attr(this,'data-hotkey') === hotkey_seq; }).remove();
+			}
+			else {
+				btn.text('...');
+				return;
+			}
+		}
+
+		btn.off('keydown',keydownHotkey).off('keyup',keyupHotkey).off('blur',blurHotkey).text(hotkey).attr('data-hotkey',hotkey);
+		if (oldhotkey) {
+			ctx.hotkeys('unbind',oldhotkey);
+		}
+
+		hotkeyEl.attr('data-hotkey',hotkey_seq).find('.compose, .remove').show();
 		// prevent this event to call hotkey
 		setTimeout(function () {
-			$(window).hotkeys('bind',hotkey,actionName);
+			ctx.hotkeys('bind', hotkey_seq, actionName);
 		}, 0);
 	}
 }

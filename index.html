@@ -4,13 +4,20 @@
 <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
 <title>Hotkeys</title>
 <style type="text/css">
-#config .hotkeys {
+#inputs,
+.hotkey-config .hotkeys {
 	list-style: none;
 	margin: 0;
 	padding: 0;
 }
-#config .hotkeys li {
+.hotkey-config .hotkeys li {
 	display: inline;
+	margin: 0 1em 0 0;
+	white-space: nowrap;
+}
+#inputs li {
+	display: inline-block;
+	vertical-align: top;
 	margin: 0 1em 0 0;
 }
 </style>
@@ -20,13 +27,17 @@
 </head>
 <body>
 <h1>Hotkeys</h1>
-<table id="config">
+<table id="config" class="hotkey-config">
 <thead>
 <tr><th>Action</th><th>Shortcuts</th><th></th><th></th></tr>
 </thead>
 <tbody></tbody>
 </table>
-<textarea autofocus></textarea>
+<ul id="inputs">
+<li><label>Can't type "X":<br/><textarea id="normal-text" autofocus></textarea></label></li>
+<li><label>Block shortcuts without modifiers:<br/><textarea id="protected-text"></textarea></label></li>
+<li><label>Block all shortcuts:<br/><textarea id="full-protected-text"></textarea></label></li>
+</ul>
 <div id="compose"></div>
 <ul id="out"></ul>
 </body>
