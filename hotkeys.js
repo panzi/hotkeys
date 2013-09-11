@@ -48,6 +48,13 @@
 			 45: 'Insert',
 			 46: 'Delete',
 			 47: 'Help',
+			 58: ':',
+			 59: ';',
+			 60: '<',
+			 61: '=',
+			 62: '>',
+			 63: '?',
+			 64: '@',
 			 91: Windows ? 'Left\u00a0Win'  : Mac ? 'Left\u00a0Cmd'  : 'Left\u00a0Meta',
 			 92: Windows ? 'Right\u00a0Win' : Mac ? 'Right\u00a0Cmd' : 'Right\u00a0Meta',
 			 93: 'Context\u00a0Menu',
@@ -64,6 +71,7 @@
 			105: 'Numpad\u00a09',
 			106: 'Multiply',
 			107: 'Add',
+			108: 'Separator',
 			109: 'Subtract',
 			110: 'Decimal',
 			111: 'Divide',
@@ -164,9 +172,14 @@
 	};
 
 	(function () {
-		// alpha numerical keys
-		for (var ch = '0'.charCodeAt(0), last = 'z'.charCodeAt(0); ch <= last; ++ ch) {
-			defaultLayout.keys[ch] = String.fromCharCode(ch).toUpperCase();
+		// numerical keys
+		for (var ch = '0'.charCodeAt(0), last = '9'.charCodeAt(0); ch <= last; ++ ch) {
+			defaultLayout.keys[ch] = String.fromCharCode(ch);
+		}
+
+		// alphabetical keys
+		for (var ch = 'A'.charCodeAt(0), last = 'Z'.charCodeAt(0); ch <= last; ++ ch) {
+			defaultLayout.keys[ch] = String.fromCharCode(ch);
 		}
 
 		// function keys

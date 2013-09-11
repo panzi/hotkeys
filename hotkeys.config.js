@@ -169,7 +169,7 @@
 						function () { return $.attr(this,'data-hotkey') === hotkey_seq; }).remove();
 				}
 				else {
-					btn.text('...');
+					btn.text('...').focus();
 					return;
 				}
 			}
