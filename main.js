@@ -25,10 +25,10 @@ $(window).
 		$('#compose').text(event.hotkey + ' ...');
 	}).
 	on('hotkey:abort-composition', function (event) {
-		$('#compose').text('');
+		$('#compose').empty();
 	}).
 	on('hotkey', function (event) {
-		$('#compose').text('');
+		$('#compose').empty();
 		log(event.hotkey + ' -> ' + event.action + ' (via jQuery event system)');
 	});
 

@@ -101,11 +101,21 @@
 
 	function resetHotkeys (event) {
 		var actionEl   = $(this).parents('.action');
-		var hotkeysEl  = actionEl.first().find('.hotkeys').empty();
+		var hotkeysEl  = actionEl.first().find('.hotkeys');
 		var actionName = actionEl.attr('data-action');
-		var action = getContext(actionEl).hotkeys('actions')[actionName];
+		var ctx     = getContext(actionEl);
+		var action  = ctx.hotkeys('actions')[actionName];
+		var hotkeys = ctx.hotkeys('bindings', actionName);
 
+		if (hotkeys) {
+			for (var i = 0; i < hotkeys.length; ++ i) {
+				ctx.hotkeys('unbind',hotkeys[i],actionName);
+			}
+		}
+
+		hotkeysEl.empty();
 		if (action && action.defaultHotkey) {
+			ctx.hotkeys('bind',action.defaultHotkey,action.name);
 			hotkeysEl.append(renderHotkey(action.defaultHotkey));
 		}
 	}
