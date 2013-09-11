@@ -152,6 +152,7 @@
 			var ctx = getContext(hotkeyEl);
 			var other = ctx.hotkeys('action',hotkey_seq);
 
+			// TODO: check for ambigious prefix?
 			if (other === actionName) {
 				if (hotkey_seq !== oldhotkey) {
 					hotkeyEl.remove();

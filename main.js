@@ -40,6 +40,6 @@ console.log($(window).hotkeys('action','Y'));
 
 $(document).ready(function () {
 	$('#config').hotkeysConfig(window);
-	$('#protected-text').hotkeys('protect');
-	$('#full-protected-text').hotkeys('protect',true);
+	$('#protected-text').hotkeys('block');
+	$('#full-protected-text').hotkeys('block',true);
 });

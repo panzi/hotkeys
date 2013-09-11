@@ -11,6 +11,8 @@
 	// $(window).hotkeys('action',  'Ctrl-D') -> {name: 'delete', lable: 'Delete', action: function () {}} or null
 	// $(window).hotkeys('actions') -> {'delete': {name: 'delete', lable: 'Delete', ... }, ... }
 	// $(window).hotkeys('clear') -> this
+	// $(elem).hotkeys('block', true) -> this
+	// $(elem).hotkeys('unblock', true) -> this
 
 	var Mac     = /^(Mac|iPhone|iPad|iOS)/i.test(navigator.platform);
 	var Windows = /^Win/i.test(navigator.platform);
@@ -587,25 +589,25 @@
 				}
 				return this;
 
-			case 'protect':
-				return $(this).keydown(arguments[1] ? fullProtectKeydown : protectKeydown);
+			case 'block':
+				return $(this).keydown(arguments[1] ? fullBlockKeydown : blockKeydown);
 
-			case 'unprotect':
-				return $(this).off('keydown',arguments[1] ? fullProtectKeydown : protectKeydown);
+			case 'unblock':
+				return $(this).off('keydown',arguments[1] ? fullBlockKeydown : blockKeydown);
 
 			default:
 				throw new TypeError("unknown method: "+method);
 		}
 	};
 
-	function protectKeydown (event) {
+	function blockKeydown (event) {
 		var hotkey = parseEvent(event);
 		if (hotkey.keyCode && !(hotkey.ctrlKey || hotkey.altKey || hotkey.metaKey || hotkey.altGraphKey || hotkey.shiftKey)) {
 			event.stopPropagation();
 		}
 	}
 
-	function fullProtectKeydown (event) {
+	function fullBlockKeydown (event) {
 		event.stopPropagation();
 	}
 
