@@ -51,6 +51,7 @@
 			 91: Windows ? 'Left\u00a0Win'  : Mac ? 'Left\u00a0Cmd'  : 'Left\u00a0Meta',
 			 92: Windows ? 'Right\u00a0Win' : Mac ? 'Right\u00a0Cmd' : 'Right\u00a0Meta',
 			 93: 'Context\u00a0Menu',
+			 95: 'Sleep',
 			 96: 'Numpad\u00a00',
 			 97: 'Numpad\u00a01',
 			 98: 'Numpad\u00a02',
@@ -68,10 +69,44 @@
 			111: 'Divide',
 			144: 'Num\u00a0Lock',
 			145: 'Scroll\u00a0Lock',
+			160: '^',
+			161: '!',
+			162: '"',
+			163: '#',
+			164: '$',
+			165: '%',
+			166: '&',
+			167: '_',
+			168: '(',
+			169: ')',
+			170: '*',
+			171: '+',
+			172: '|',
+			173: '-',
+			174: '{',
+			175: '}',
+			176: '~',
+			181: 'Volume\u00a0Mute',
+			182: 'Volume\u00a0Down',
+			183: 'Volume\u00a0Up',
+			188: ',',
+			190: '.',
+			191: '/',
+			192: '´',
+			219: '[',
+			220: '\\',
+			221: ']',
+			222: "'",
+			224: Windows ? 'Win' : Mac ? 'Cmd' : 'Meta',
+			225: 'Alt\u00a0Gr',
+			250: 'Play',
+			251: 'Zoom'
+
+/* XXX: these codes are wrong for some reason:
 			162: 'Left\u00a0Control',
 			163: 'Right\u00a0Control',
-//			164: 'Left\u00a0Alt',
-//			165: 'Right\u00a0Alt',
+			164: 'Left\u00a0Alt',
+			165: 'Right\u00a0Alt',
 			166: 'Browser\u00a0Back',
 			167: 'Browser\u00a0Forward',
 			168: 'Browser\u00a0Refresh',
@@ -88,10 +123,7 @@
 			179: 'Media\u00a0Play\u00a0Pause',
 			180: 'Launch\u00a0Mail',
 			181: 'Select\u00a0Media',
-			224: Windows ? 'Win' : Mac ? 'Cmd' : 'Meta',
-			225: 'Alt\u00a0Gr',
-			250: 'Play',
-			251: 'Zoom'
+*/
 		},
 		aliases: {
 			esc: 27,
@@ -191,28 +223,37 @@
 
 	function parsekey (hotkey) {
 		hotkey = $.trim(hotkey);
-		if (hotkey.length === 0) {
-			throw new SyntaxError("hotkey may not be empty");
-		}
 
-		var lower = hotkey.toLowerCase();
-		var re = /-(.[^-]*)?/g;
-		var m = re.exec(lower);
 		var syms = [];
+		var lower = hotkey.toLowerCase();
 
-		if (m) {
-			syms.push(lower.slice(0,m.index));
-			do {
-				var sym = m[1];
-				if (!sym) {
-					throw new SyntaxError("illegal hotkey "+hotkey+": key name may not be empty");
-				}
-				syms.push(sym);
-				m = re.exec(lower);
-			} while (m);
+		if (/^-/.test(lower)) {
+			syms.push('-');
+			lower = lower.slice(1);
 		}
-		else {
-			syms.push(lower);
+
+		if (lower) {
+			var re = /-(.[^-]*)?/g;
+			var m = re.exec(lower);
+
+			if (m) {
+				syms.push(lower.slice(0,m.index));
+				do {
+					var sym = m[1];
+					if (!sym) {
+						throw new SyntaxError("illegal hotkey "+hotkey+": key name may not be empty");
+					}
+					syms.push(sym);
+					m = re.exec(lower);
+				} while (m);
+			}
+			else {
+				syms.push(lower);
+			}
+		}
+
+		if (syms.length === 0) {
+			throw new SyntaxError("hotkey may not be empty");
 		}
 
 		var parsed = new Hotkey();
