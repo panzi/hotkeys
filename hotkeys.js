@@ -206,12 +206,12 @@
 		ModifierKeys  = $.extend({}, layout.modifierKeys);
 		ModifierNames = $.extend({}, $.hotkeys.defaultLayout.modifiers, layout.modifiers);
 
-		for (var key in layout.keys) {
-			addKey(Keys, Number(key), layout.keys[key]);
+		for (var key in KeyNames) {
+			addKey(Keys, Number(key), KeyNames[key]);
 		}
 
-		for (var key in layout.modifiers) {
-			addKey(Modifiers, key, layout.modifiers[key]);
+		for (var key in ModifierNames) {
+			addKey(Modifiers, key, ModifierNames[key]);
 		}
 	}
 

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
+<title>Keyboard Layout</title>
+<style type="text/css">
+#multiple-modifiers {
+	visibility: hidden;
+}
+#layout .code {
+	text-align: right;
+}
+#layout tbody .code {
+	font-family: monospace;
+}
+input.invalid {
+	color: white;
+	background: red;
+}
+</style>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript" src="hotkeys.js"></script>
+<script type="text/javascript" src="layout.js"></script>
+</head>
+<body>
+<h1>Keyboard Layout</h1>
+
+<label>Layout Name: <input id="layout-name" type="text"/></label><br/>
+
+<label>Press all keys here (one at a time): <input id="input-keys" type="text" autofocus/></label>
+
+<button id="clear">Clear</button>
+
+<table id="layout">
+<thead>
+<tr>
+<th class="code" colspan="2">Key Code</th>
+<th class="code">Char Code</th>
+<th class="name">Key Name</th>
+<th class="modifier">Modifier</th>
+<th></th>
+</tr>
+</thead>
+<tbody></tbody>
+<tfoot>
+<tr>
+<th class="code" colspan="2">Key Code</th>
+<th class="name">Key Name</th>
+<th class="modifier">Modifier</th>
+<th></th>
+</tr>
+</tfoot>
+</table>
+<div id="multiple-modifiers">Please press only one key at a time!</div>
+
+<table id="modifiers">
+<thead>
+<tr><th class="modifier">Modifier</th><th class="name">Name</th></tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+
+<textarea id="layout-json"></textarea>
+
+</body>
+</html>
