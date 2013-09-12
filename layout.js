@@ -22,13 +22,17 @@ $(document).ready(function () {
 
 	function initModifiers () {
 		var tbody = $("#modifiers tbody").empty();
+		var select = $('#new-key-modifier').empty();
+		$('<option selected value="none">').appendTo(select);
 		for (var modifier in layout.modifiers) {
+			var modifierName = layout.modifiers[modifier];
 			var tr = $('<tr>').data('modifier',modifier);
 
 			$('<td class="modifier">').text(modifier).appendTo(tr);
 			var name = $('<td class="name">').appendTo(tr);
 			var form = $('<form action="javascript:void(0)">').submit(submitModifierName).appendTo(name);
-			$('<input type="text" name="name">').val(layout.modifiers[modifier]).change(changeModifier).appendTo(form);
+			$('<input type="text" name="name">').val(modifierName).change(changeModifier).appendTo(form);
+			$('<option>',{value:modifier}).text(modifierName).appendTo(select);
 
 			tbody.append(tr);
 		}
@@ -138,6 +142,10 @@ $(document).ready(function () {
 		}
 	});
 
+	$('#has-new-char-code').change(function (event) {
+		$('#new-char-code').prop('disabled',!this.checked);	
+	});
+
 	function submitName (event) {
 		event.preventDefault();
 
@@ -180,7 +188,7 @@ $(document).ready(function () {
 		var modifier = $(this).parents('tr').data('modifier');
 		var name = layout.modifiers[modifier] = this.value;
 
-		$('#layout .'+modifier).text(name);
+		$('#layout .'+modifier+', #new-key-modifier option[value='+modifier+']').text(name);
 
 		$("#layout-json").val(JSON.stringify(layout));
 	}
@@ -224,9 +232,11 @@ $(document).ready(function () {
 	}
 
 	$("#clear").click(function (event) {
-		layout = new Layout();
-		$("#layout tbody").empty();
-		$("#layout-json").val('');
-		initModifiers();
+		if (confirm("Do you really want to clear the layout and loose any changes?")) {
+			layout = new Layout();
+			$("#layout tbody").empty();
+			$("#layout-json").val('');
+			initModifiers();
+		}
 	});
 });

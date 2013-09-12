@@ -7,6 +7,7 @@
 #multiple-modifiers {
 	visibility: hidden;
 }
+input[type=number],
 #layout .code {
 	text-align: right;
 }
@@ -16,6 +17,9 @@
 input.invalid {
 	color: white;
 	background: red;
+}
+input[type=number] {
+	width: 5em;
 }
 </style>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -29,7 +33,7 @@ input.invalid {
 
 <label>Press all keys here (one at a time): <input id="input-keys" type="text" autofocus/></label>
 
-<button id="clear">Clear</button>
+<button id="clear">Clear Layout</button>
 
 <table id="layout">
 <thead>
@@ -44,7 +48,17 @@ input.invalid {
 <tbody></tbody>
 <tfoot>
 <tr>
+<td colspan="2" class="code"><input type="number" id="new-key-code"/></td>
+<td class="code"><input type="checkbox" id="has-new-char-code"/>
+<input type="number" id="new-char-code" disabled/></td>
+<td class="name"><input type="text" id="new-key-name"/></td>
+<td class="modifier"><select id="new-key-modifier"></select></td>
+<td><button id="add-new-key">Add</button></td>
+</td>
+</tr>
+<tr>
 <th class="code" colspan="2">Key Code</th>
+<th class="code">Char Code</th>
 <th class="name">Key Name</th>
 <th class="modifier">Modifier</th>
 <th></th>
