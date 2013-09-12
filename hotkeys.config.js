@@ -1,6 +1,5 @@
 (function ($, undefined) {
-	$.hotkeysConfig = {		
-		format: format,
+	$.hotkeysConfig = {
 		strings: {
 			hdr_action:      'Action',
 			hdr_shortcuts:   'Shortcuts',
@@ -11,36 +10,12 @@
 			tooltip_remove:  'Remove hotkey',
 			btn_default:     'Default',
 			unsupported_key: 'Unsupported\u00a0Key!',
-			confirm_reasign: 'The hotkey {hotkey} is already assigned to the action "{action}".\nDo you want to reasign this hotkey?',
-			unmatched_left:  'Unmatched left curly bracket "{" in format.',
-			unmatched_right: 'Unmatched right curly bracket "}" in format.'
+			confirm_reasign: 'The hotkey {hotkey} is already assigned to the action "{action}".\nDo you want to reasign this hotkey?'
 		}
 	};
 
 	function getContext (elem) {
 		return $(elem.parents('.hotkey-config').data('hotkeys-context'));
-	}
-
-	function format (fmt, kwargs) {
-		var args = arguments;
-		var index = 1;
-		return fmt.replace(/{([^{}]*)}|{{|}}|{|}/g, function (match, key) {
-			if (key !== undefined) {
-				if (key) {
-					return kwargs[key];
-				}
-				else {
-					return args[index ++];
-				}
-			}
-
-			switch (match) {
-				case '{{': return '{';
-				case '}}': return '}';
-				case '{': throw new SyntaxError($.hotkeysConfig.strings.unmatched_left);
-				case '}': throw new SyntaxError($.hotkeysConfig.strings.unmatched_right);
-			}
-		});
 	}
 
 	function renderHotkey (hotkey) {
@@ -160,7 +135,7 @@
 			}
 			else if (other) {
 				var otherAction = ctx.hotkeys('actions')[other];
-				if (confirm(format(strs.confirm_reasign, {
+				if (confirm($.hotkeys.format(strs.confirm_reasign, {
 					hotkey: hotkey_seq,
 					action: otherAction ? otherAction.label : other
 				}))) {

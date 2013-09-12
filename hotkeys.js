@@ -14,6 +14,28 @@
 	// $(elem).hotkeys('block', true) -> this
 	// $(elem).hotkeys('unblock', true) -> this
 
+	function format (fmt, kwargs) {
+		var args = arguments;
+		var index = 1;
+		return fmt.replace(/{([^{}]*)}|{{|}}|{|}/g, function (match, key) {
+			if (key !== undefined) {
+				if (key) {
+					return kwargs[key];
+				}
+				else {
+					return args[index ++];
+				}
+			}
+
+			switch (match) {
+				case '{{': return '{';
+				case '}}': return '}';
+				case '{': throw new SyntaxError($.hotkeys.strings.unmatched_left);
+				case '}': throw new SyntaxError($.hotkeys.strings.unmatched_right);
+			}
+		});
+	}
+
 	var Mac     = /^(Mac|iPhone|iPad|iOS)/i.test(navigator.platform);
 	var Windows = /^Win/i.test(navigator.platform);
 
@@ -195,10 +217,10 @@
 
 	function addKey (keys, key, name) {
 		if (name !== '-' && /[- \t\n\r\v]/.test(name)) {
-			throw new SyntaxError('illegal key name '+name+': key names may not include breakable spaces (" \\t\\n\\r\\v") or dashes ("-").');
+			throw new SyntaxError(format($.hotkeys.strings.key_name_spaces, {name: name}));
 		}
 		else if (/^K\+[0-9A-F]+$/i.test(name)) {
-			throw new SyntaxError('illegal key name '+name+': key names may not be ot the format K+XXX (where XXX is a hexadecimal number).');
+			throw new SyntaxError(format($.hotkeys.strings.key_name_k_xxx, {name: name}));
 		}
 		name = name.toLowerCase();
 		keys[name.replace(/\u00a0/g,"")] = keys[name] = key;
@@ -218,72 +240,66 @@
 	function parsekey (hotkey) {
 		hotkey = $.trim(hotkey);
 
-		var syms = [];
+		var keys = [];
 		var lower = hotkey.toLowerCase();
 
-		if (/^-/.test(lower)) {
-			syms.push('-');
-			lower = lower.slice(1);
+		if (!lower) {
+			throw new SyntaxError($.hotkeys.strings.hotkey_empty);
 		}
+
+		var m = /^(.[^-]*)/.exec(lower);
+		var key = m[1];
+		keys.push(key);
+		lower = lower.slice(key.length);
 
 		if (lower) {
 			var re = /-(.[^-]*)?/g;
-			var m = re.exec(lower);
+			m = re.exec(lower);
 
-			if (m) {
-				syms.push(lower.slice(0,m.index));
-				do {
-					var sym = m[1];
-					if (!sym) {
-						throw new SyntaxError("illegal hotkey "+hotkey+": key name may not be empty");
-					}
-					syms.push(sym);
-					m = re.exec(lower);
-				} while (m);
-			}
-			else {
-				syms.push(lower);
-			}
-		}
-
-		if (syms.length === 0) {
-			throw new SyntaxError("hotkey may not be empty");
+			do {
+				var key = m[1];
+				if (!key) {
+					throw new SyntaxError(format($.hotkeys.strings.hotkey_empty, {hotkey: hotkey}));
+				}
+				keys.push(key);
+				m = re.exec(lower);
+			} while (m);
 		}
 
 		var parsed = new Hotkey();
 
-		for (var i = 0; i < syms.length; ++ i) {
-			var sym = syms[i];
+		for (var i = 0; i < keys.length; ++ i) {
+			var key = keys[i];
 			var keyCode;
-			if (Modifiers.hasOwnProperty(sym)) {
-				parsed[Modifiers[sym]] = true;
+			if (Modifiers.hasOwnProperty(key)) {
+				parsed[Modifiers[key]] = true;
 			}
-			else if (Keys.hasOwnProperty(sym)) {
-				keyCode = Keys[sym];
+			else if (Keys.hasOwnProperty(key)) {
+				keyCode = Keys[key];
 				if (parsed.keyCode !== null && parsed.keyCode !== keyCode) {
-					throw new SyntaxError("illegal hotkey "+hotkey+": hotkey musst contain exactly one non-modifier key");
+					throw new SyntaxError(format($.hotkeys.strings.hotkey_non_modifier, {hotkey: hotkey}));
 				}
 				parsed.keyCode = keyCode;
 			}
-			else if (/^K\+[0-9A-F]+$/i.test(sym)) {
-				keyCode = parseInt(sym.slice(2),16);
+			else if (/^K\+[0-9A-F]+$/i.test(key)) {
+				keyCode = parseInt(key.slice(2),16);
 				if (ModifierKeys.hasOwnProperty(keyCode)) {
 					parsed[ModifierKeys[keyCode]] = true;
 				}
 				else if (parsed.keyCode !== null && parsed.keyCode !== keyCode) {
-					throw new SyntaxError("illegal hotkey "+hotkey+": hotkey musst contain exactly one non-modifier key");
+					throw new SyntaxError(format($.hotkeys.strings.hotkey_non_modifier, {hotkey: hotkey}));
 				}
 				else {
 					parsed.keyCode = keyCode;
 				}
 			}
 			else {
-				throw new SyntaxError("illegal hotkey "+hotkey+": unknown key name "+sym);
+				throw new SyntaxError(format($.hotkeys.strings.hotkey_non_modifier, {hotkey: hotkey, key: key}));
 			}
 		}
 
 		if (parsed.keyCode === null) {
-			throw new SyntaxError("illegal hotkey "+hotkey+": hotkey musst contain exactly one non-modifier key");
+			throw new SyntaxError(format($.hotkeys.strings.hotkey_non_modifier, {hotkey: hotkey}));
 		}
 
 		return parsed;
@@ -460,11 +476,11 @@
 
 	function registerAction (ctx,action) {
 		if (!action.name) {
-			throw new TypeError("illegal action name: "+action.name);
+			throw new TypeError(format($.hotkeys.strings.illegal_action_name, {action: action.name}));
 		}
 
 		if (typeof action.action !== 'function') {
-			throw new TypeError("action is not a function: "+action.action);
+			throw new TypeError(format($.hotkeys.strings.action_not_funct, {action: action}));
 		}
 
 		var hotkeys = get(ctx);
@@ -476,7 +492,7 @@
 
 	function bind (ctx, hotkey_seq, action) {
 		if (!action) {
-			throw new TypeError("illegal action name: "+action);
+			throw new TypeError(format($.hotkeys.strings.illegal_action_name, {action: action}));
 		}
 		hotkey_seq = $.map($.trim(hotkey_seq).split(/[ \t\r\n\v]+/), normkey);
 		var node = get(ctx);
@@ -645,7 +661,7 @@
 				return this;
 
 			default:
-				throw new TypeError("unknown method: "+method);
+				throw new TypeError(format($.hotkeys.strings.unknown_method, {method: method}));
 		}
 	};
 
@@ -664,7 +680,7 @@
 				break;
 
 			default:
-				throw new TypeError('illegal block type: '+what);
+				throw new TypeError(format($.hotkeys.strings.illegal_block_type, {type: what}));
 		}
 	}
 
@@ -683,7 +699,7 @@
 				break;
 
 			default:
-				throw new TypeError('illegal block type: '+what);
+				throw new TypeError(format($.hotkeys.strings.illegal_block_type, {type: what}));
 		}
 	}
 
@@ -734,7 +750,22 @@
 		parseEvent:    parseEvent,
 		setLayout:     setLayout,
 		getLayout:     function () { return currentLayout; },
-		defaultLayout: defaultLayout
+		defaultLayout: defaultLayout,
+		format:        format,
+		strings: {
+			unmatched_left:      'Unmatched left curly bracket "{" in format.',
+			unmatched_right:     'Unmatched right curly bracket "}" in format.',
+			hotkey_empty:        'Hotkey may not be empty.',
+			key_name_spaces:     'Illegal key name {name}: Key names may not include breakable spaces (" \\t\\n\\r\\v") or dashes ("-").',
+			key_name_k_xxx:      'Illegal key name {name}: Key names may not be ot the format K+XXX (where XXX is a hexadecimal number).',
+			key_name_empty:      'Illegal hotkey {hotkey}: Key names may not be empty.',
+			key_name_unknown:    'Illegal hotkey {hotkey}: Unknown key name "{key}".',
+			hotkey_non_modifier: 'Illegal hotkey {hotkey}: Hotkeys musst contain exactly one non-modifier key.',
+			illegal_action_name: 'Illegal action name: {action}',
+			action_not_funct:    'Action is not a function: {action}',
+			unknown_method:      'Unknown method: {method}',
+			illegal_block_type:  'Illegal block type: {type}'
+		}
 	};
 
 	setLayout(defaultLayout);
