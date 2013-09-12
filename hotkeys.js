@@ -690,14 +690,14 @@
 	function blockNonModifier (event) {
 		var hotkey = parseEvent(event);
 		if (hotkey.keyCode && !(hotkey.ctrlKey || hotkey.altKey || hotkey.metaKey || hotkey.altGraphKey || hotkey.shiftKey)) {
-			event.stopPropagation();
+			fullBlockKeydown.call(this,event);
 		}
 	}
 
 	function blockNonCompose (event) {
 		var hotkey = parseEvent(event);
 		if (hotkey.keyCode && !(hotkey.ctrlKey || hotkey.altKey || hotkey.metaKey || hotkey.altGraphKey || hotkey.shiftKey)) {
-			// search hotkeys instance
+			// search hotkeys instance:
 			var elem = event.target;
 			var hotkeys;
 			while (elem && (!(hotkeys = $.data(elem,'hotkeys')) || hotkeys.sequence.length === 0)) {
@@ -712,6 +712,17 @@
 
 	function fullBlockKeydown (event) {
 		event.stopPropagation();
+
+		// cancel any hotkey sequence:
+		var elem = event.target;
+		var hotkeys;
+		while (elem && (!(hotkeys = $.data(elem,'hotkeys')) || hotkeys.sequence.length === 0)) {
+			elem = elem.parentNode;
+		}
+
+		if (hotkeys && hotkeys.sequence.length > 0) {
+			_abort($(elem), hotkeys, event);
+		}
 	}
 
 	$.hotkeys = {
