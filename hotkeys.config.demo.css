@@ -1,0 +1,52 @@
+.hotkey-config button.compose,
+.hotkey-config button.remove {
+	border: none;
+	border-radius: 1em;
+	font-size: 0.8em;
+	display: inline-block;
+	width: 1.2em;
+	height: 1.2em;
+	padding: 0;
+	margin: 0 0.1em;
+	text-align: center;
+	vertical-align: middle;
+	font-weight: bold;
+	background: #e0e0e0;
+	color: #909090;
+}
+
+.hotkey-config button.compose:hover,
+.hotkey-config button.remove:hover,
+.hotkey-config button.compose:active,
+.hotkey-config button.remove:active {
+	background: #c6c6c6;
+	color: white;
+}
+
+.hotkey-config li button.compose,
+.hotkey-config li button.remove {
+	opacity: 0.5;
+}
+
+.hotkey-config li:hover button.compose,
+.hotkey-config li:hover button.remove {
+	opacity: 1;
+}
+
+.hotkey-config .name-cell {
+	width: 100px;
+}
+
+.hotkey-config .hotkeys {
+	width: 500px;
+}
+
+.hotkey-config td {
+	vertical-align: top;
+	padding: 0 0 1em 0;
+}
+
+.hotley-config {
+    border-spacing:0;
+    border-collapse:collapse;
+}

@@ -3,7 +3,7 @@ function log (msg) {
 }
 
 function handler (event) {
-	log(event.hotkey + ' -> ' + event.action + ' (via hotkeys action)');
+	log(event.hotkey + ' -> ' + event.action);
 }
 
 $(document).
@@ -12,7 +12,7 @@ $(document).
 	hotkeys('action', 'Baz', handler).
 	hotkeys('action', 'Bla', handler).
 	hotkeys('removeAction', 'Bla', handler).
-	hotkeys('bind', 'Alt-F',            'Foo').
+	hotkeys('bind', 'Alt-F Alt-G',      'Foo').
 	hotkeys('bind', 'Ctrl-M D',         'Bar').
 	hotkeys('bind', 'Ctrl-Alt-Shift-J', 'Bar').
 	hotkeys('bind', 'PageUp',           'Bar').
@@ -29,14 +29,18 @@ $(document).
 	}).
 	on('hotkey', function (event) {
 		$('#compose').empty();
-		log(event.hotkey + ' -> ' + event.action + ' (via jQuery event system)');
+		if (typeof console !== "undefined") {
+			console.log(event.hotkey + ' -> ' + event.action + ' (via jQuery event system)');
+		}
 	});
 
-console.log($(document).hotkeys('bindings'));
-console.log($(document).hotkeys('bindings','Bar'));
-console.log($(document).hotkeys('bindings','Bla'));
-console.log($(document).hotkeys('action','Alt-F'));
-console.log($(document).hotkeys('action','Y'));
+if (typeof console !== "undefined") {
+	console.log($(document).hotkeys('bindings'));
+	console.log($(document).hotkeys('bindings','Bar'));
+	console.log($(document).hotkeys('bindings','Bla'));
+	console.log($(document).hotkeys('action','Alt-F Alt-G'));
+	console.log($(document).hotkeys('action','Y'));
+}
 
 $(document).ready(function () {
 	$('#config').hotkeysConfig(document);
