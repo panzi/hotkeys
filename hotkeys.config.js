@@ -255,13 +255,13 @@
 					ul.append(renderHotkey(hotkeys[j]));
 				}
 
-				$('<td>').text(action.label).appendTo(tr);
-				$('<td>').append(ul).appendTo(tr);
+				$('<td>',{'class':'name-cell'}).text(action.label).appendTo(tr);
+				$('<td>',{'class':'hotkeys-cell'}).append(ul).appendTo(tr);
 
-				$('<td>').append($('<button>',{'class':'add',title:strs.tooltip_add}).
+				$('<td>',{'class':'add-cell'}).append($('<button>',{'class':'add',title:strs.tooltip_add}).
 					text('+').click(addHotkey)).appendTo(tr);
 
-				$('<td>').append($('<button>',{'class':'default',title:strs.tooltip_default}).
+				$('<td>',{'class':'default-cell'}).append($('<button>',{'class':'default',title:strs.tooltip_default}).
 					text(strs.btn_default).click(resetHotkeys)).appendTo(tr);
 
 				tbody.append(tr);
