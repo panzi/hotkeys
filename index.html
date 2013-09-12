@@ -12,11 +12,15 @@
 }
 #inputs li {
 	display: inline-block;
+	width: 300px;
 	vertical-align: top;
 	margin: 0 1em 0 0;
 }
+#inputs li textarea {
+	width: 295px;
+}
 </style>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script type="text/javascript" src="hotkeys.js"></script>
 <script type="text/javascript" src="hotkeys.config.js"></script>
 <script type="text/javascript" src="main.js"></script>
@@ -27,6 +31,7 @@
 <ul id="inputs">
 <li><label>Can't type "X":<br/><textarea id="normal-text" autofocus></textarea></label></li>
 <li><label>Block shortcuts without modifiers:<br/><textarea id="protected-text"></textarea></label></li>
+<li><label>Same, except when in composition hotkey:<br/><textarea id="compose-protected-text"></textarea></label></li>
 <li><label>Block all shortcuts:<br/><textarea id="full-protected-text"></textarea></label></li>
 </ul>
 <div id="compose"></div>

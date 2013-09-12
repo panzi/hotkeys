@@ -6,7 +6,7 @@ function handler (event) {
 	log(event.hotkey + ' -> ' + event.action + ' (via hotkeys action)');
 }
 
-$(window).
+$(document).
 	hotkeys('action', {name: 'Foo', action: handler, defaultHotkey: 'Alt-M'}).
 	hotkeys('action', 'Bar', handler).
 	hotkeys('action', 'Baz', handler).
@@ -32,14 +32,15 @@ $(window).
 		log(event.hotkey + ' -> ' + event.action + ' (via jQuery event system)');
 	});
 
-console.log($(window).hotkeys('bindings'));
-console.log($(window).hotkeys('bindings','Bar'));
-console.log($(window).hotkeys('bindings','Bla'));
-console.log($(window).hotkeys('action','Alt-F'));
-console.log($(window).hotkeys('action','Y'));
+console.log($(document).hotkeys('bindings'));
+console.log($(document).hotkeys('bindings','Bar'));
+console.log($(document).hotkeys('bindings','Bla'));
+console.log($(document).hotkeys('action','Alt-F'));
+console.log($(document).hotkeys('action','Y'));
 
 $(document).ready(function () {
-	$('#config').hotkeysConfig(window);
-	$('#protected-text').hotkeys('block');
-	$('#full-protected-text').hotkeys('block',true);
+	$('#config').hotkeysConfig(document);
+	$('#protected-text').hotkeys('block','non-modifier');
+	$('#compose-protected-text').hotkeys('block','non-compose');
+	$('#full-protected-text').hotkeys('block','all');
 });

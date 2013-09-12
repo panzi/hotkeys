@@ -1,23 +1,23 @@
 (function ($, undefined) {
-	// $(window).hotkeys('action',  'delete', function (event) { }) -> this
-	// $(window).hotkeys('action',  {name: 'delete', label: 'Delete', action: function (event) { }}) -> this
-	// $(window).hotkeys('removeAction', 'delete') -> this
-	// $(window).hotkeys('bind',    'Ctrl-D',   'delete') -> this
-	// $(window).hotkeys('bind',    'Ctrl-M D', 'delete') -> this
-	// $(window).hotkeys('unbind',  'Ctrl-M D') -> this
-	// $(window).hotkeys('unbind',  'Ctrl-M D', 'delete') -> this
-	// $(window).hotkeys('bindings', 'delete') -> ['Ctrl-D']
-	// $(window).hotkeys('bindings') -> {'delete':['Ctrl-D'], ...}
-	// $(window).hotkeys('action',  'Ctrl-D') -> {name: 'delete', lable: 'Delete', action: function () {}} or null
-	// $(window).hotkeys('actions') -> {'delete': {name: 'delete', lable: 'Delete', ... }, ... }
-	// $(window).hotkeys('clear') -> this
+	// $(document).hotkeys('action',  'delete', function (event) { }) -> this
+	// $(document).hotkeys('action',  {name: 'delete', label: 'Delete', action: function (event) { }}) -> this
+	// $(document).hotkeys('removeAction', 'delete') -> this
+	// $(document).hotkeys('bind',    'Ctrl-D',   'delete') -> this
+	// $(document).hotkeys('bind',    'Ctrl-M D', 'delete') -> this
+	// $(document).hotkeys('unbind',  'Ctrl-M D') -> this
+	// $(document).hotkeys('unbind',  'Ctrl-M D', 'delete') -> this
+	// $(document).hotkeys('bindings', 'delete') -> ['Ctrl-D']
+	// $(document).hotkeys('bindings') -> {'delete':['Ctrl-D'], ...}
+	// $(document).hotkeys('action',  'Ctrl-D') -> {name: 'delete', lable: 'Delete', action: function () {}} or null
+	// $(document).hotkeys('actions') -> {'delete': {name: 'delete', lable: 'Delete', ... }, ... }
+	// $(document).hotkeys('clear') -> this
 	// $(elem).hotkeys('block', true) -> this
 	// $(elem).hotkeys('unblock', true) -> this
 
 	var Mac     = /^(Mac|iPhone|iPad|iOS)/i.test(navigator.platform);
 	var Windows = /^Win/i.test(navigator.platform);
 
-	// hopefully common subset keyboard layout:
+	// english keyboard layout:
 	var defaultLayout = {
 		keys: {
 			  3: 'Cancel',
@@ -49,9 +49,9 @@
 			 46: 'Delete',
 			 47: 'Help',
 			 58: ':',
-			 59: ';',
+//			 59: ';',
 			 60: '<',
-			 61: '=',
+//			 61: '=',
 			 62: '>',
 			 63: '?',
 			 64: '@',
@@ -90,14 +90,17 @@
 			170: '*',
 			171: '+',
 			172: '|',
-			173: '-',
+//			173: '-',
 			174: '{',
 			175: '}',
 			176: '~',
 			181: 'Volume\u00a0Mute',
 			182: 'Volume\u00a0Down',
 			183: 'Volume\u00a0Up',
+			186: ';',
+			187: '=',
 			188: ',',
+			189: '-',
 			190: '.',
 			191: '/',
 			192: '´',
@@ -107,31 +110,9 @@
 			222: "'",
 			224: Windows ? 'Win' : Mac ? 'Cmd' : 'Meta',
 			225: 'Alt\u00a0Gr',
+//			226: ???, XXX: is it '<', '|' or '\' on IE?
 			250: 'Play',
 			251: 'Zoom'
-
-/* XXX: these codes are wrong for some reason:
-			162: 'Left\u00a0Control',
-			163: 'Right\u00a0Control',
-			164: 'Left\u00a0Alt',
-			165: 'Right\u00a0Alt',
-			166: 'Browser\u00a0Back',
-			167: 'Browser\u00a0Forward',
-			168: 'Browser\u00a0Refresh',
-			169: 'Browser\u00a0Stop',
-			170: 'Browser\u00a0Search',
-			171: 'Browser\u00a0Favorites',
-			172: 'Browser\u00a0Home',
-			173: 'Volume\u00a0Mute',
-			174: 'Volume\u00a0Down',
-			175: 'Volume\u00a0Up',
-			176: 'Media\u00a0Next\u00a0Track',
-			177: 'Media\u00a0Previous\u00a0Track',
-			178: 'Media\u00a0Stop',
-			179: 'Media\u00a0Play\u00a0Pause',
-			180: 'Launch\u00a0Mail',
-			181: 'Select\u00a0Media',
-*/
 		},
 		aliases: {
 			esc: 27,
@@ -434,22 +415,22 @@
 			}
 		}
 		else if (hotkeys.sequence.length > 0) {
-			_abort(hotkeys, event);
+			_abort($(this), hotkeys, event);
 		}
 	}
 
-	function _abort (hotkeys, event) {
+	function _abort (ctx, hotkeys, event) {
 		var hotkey_seq = $.map(hotkeys.sequence, function (el) { return $.extend({},el.hotkey); });
 		hotkey_seq.toString = sequenceToString;
 		hotkeys.sequence = [];
 		var evt = $.Event(event, {type:'hotkey:abort-composition', hotkey:hotkey_seq});
-		$(this).trigger(evt);
+		ctx.trigger(evt);
 	}
 
 	function abort (event) {
 		var hotkeys = $.data(this,'hotkeys');
 		if (hotkeys.sequence.length > 0) {
-			_abort(hotkeys, event);
+			_abort($(this), hotkeys, event);
 		}
 	}
 
@@ -462,6 +443,15 @@
 				hotkeys:  {},
 				sequence: []
 			};
+			if (ctx[0] !== window) {
+				hotkeys.onabort = function (event) {
+					var hotkeys = ctx.data('hotkeys');
+					if (hotkeys && hotkeys.sequence.length > 0) {
+						_abort(ctx, hotkeys, event);
+					}
+				};
+				$(window).on('blur click',hotkeys.onabort);
+			}
 			ctx.data('hotkeys', hotkeys).on('blur click',abort).keydown(keydown);
 		}
 
@@ -639,25 +629,84 @@
 			case 'clear':
 				hotkeys = this.data('hotkeys');
 				if (hotkeys) {
+					if (hotkeys.onabort) {
+						$(window).off('blur click',hotkeys.onabort);
+					}
 					this.off('blur click',abort).off('keydown',keydown).removeData('hotkeys');
 				}
 				return this;
 
 			case 'block':
-				return $(this).keydown(arguments[1] ? fullBlockKeydown : blockKeydown);
+				block(this, arguments[1]);
+				return this;
 
 			case 'unblock':
-				return $(this).off('keydown',arguments[1] ? fullBlockKeydown : blockKeydown);
+				unblock(this, arguments[1]);
+				return this;
 
 			default:
 				throw new TypeError("unknown method: "+method);
 		}
 	};
 
-	function blockKeydown (event) {
+	function block (elem, what) {
+		switch (what||'non-modifier') {
+			case 'non-modifier':
+				elem.keydown(blockNonModifier);
+				break;
+
+			case 'non-compose':
+				elem.keydown(blockNonCompose);
+				break;
+
+			case 'all':
+				elem.keydown(fullBlockKeydown);
+				break;
+
+			default:
+				throw new TypeError('illegal block type: '+what);
+		}
+	}
+
+	function unblock (elem, what) {
+		switch (what||'non-modifier') {
+			case 'non-modifier':
+				elem.off('keydown',blockNonModifier);
+				break;
+
+			case 'non-compose':
+				elem.off('keydown',blockNonCompose);
+				break;
+
+			case 'all':
+				elem.off('keydown',fullBlockKeydown);
+				break;
+
+			default:
+				throw new TypeError('illegal block type: '+what);
+		}
+	}
+
+	function blockNonModifier (event) {
 		var hotkey = parseEvent(event);
 		if (hotkey.keyCode && !(hotkey.ctrlKey || hotkey.altKey || hotkey.metaKey || hotkey.altGraphKey || hotkey.shiftKey)) {
 			event.stopPropagation();
+		}
+	}
+
+	function blockNonCompose (event) {
+		var hotkey = parseEvent(event);
+		if (hotkey.keyCode && !(hotkey.ctrlKey || hotkey.altKey || hotkey.metaKey || hotkey.altGraphKey || hotkey.shiftKey)) {
+			// search hotkeys instance
+			var elem = event.target;
+			var hotkeys;
+			while (elem && (!(hotkeys = $.data(elem,'hotkeys')) || hotkeys.sequence.length === 0)) {
+				elem = elem.parentNode;
+			}
+
+			if (!hotkeys || hotkeys.sequence.length === 0) {
+				event.stopPropagation();
+			}
 		}
 	}
 
