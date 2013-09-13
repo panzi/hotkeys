@@ -131,7 +131,7 @@
 			221: ']',
 			222: "'",
 			224: Windows ? 'Win' : Mac ? 'Cmd' : 'Meta',
-			225: 'Alt\u00a0Gr',
+			225: 'Alt\u00a0Graph',
 //			226: ???, XXX: is it '<', '|' or '\' on IE?
 			250: 'Play',
 			251: 'Zoom'
@@ -154,10 +154,6 @@
 			 18: 'altKey',
 			 91: 'metaKey',
 			 92: 'metaKey',
-			162: 'ctrlKey',
-			163: 'ctrlKey',
-//			164: 'altKey',
-//			165: 'altKey',
 			224: 'metaKey',
 			225: 'altGraphKey'
 		},
