@@ -29,6 +29,8 @@ input[type=number] {
 	color: red;
 }
 </style>
+<script type="text/javascript" src="Blob.js"></script>
+<script type="text/javascript" src="FileSaver.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script type="text/javascript" src="hotkeys.js"></script>
 <script type="text/javascript" src="layout.js"></script>
@@ -38,9 +40,19 @@ input[type=number] {
 
 <label>Layout Name: <input id="layout-name" type="text"/></label><br/>
 
+<table id="modifiers">
+<thead>
+<tr><th class="modifier">Modifier</th><th class="name">Name</th></tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+
 <label>Press all keys here (one at a time): <input id="input-keys" type="text" autofocus/></label>
 
-<button id="clear">Clear Layout</button>
+<button id="clear-layout">Clear Layout</button>
+<button id="default-layout">Load Default Layout</button>
+<button id="save-layout" style="display:none;">Save Layout</button>
 
 <div id="multiple-modifiers">Please press only one key at a time!</div>
 
@@ -53,9 +65,6 @@ input[type=number] {
 <th class="modifier">Modifier</th>
 <th></th>
 </tr>
-</thead>
-<tbody></tbody>
-<tfoot>
 <tr>
 <td colspan="2" class="code"><form
 action="javascript:void(0)"><input type="number" min="1" id="new-key-code"/></form></td>
@@ -70,6 +79,9 @@ action="javascript:void(0)"><select id="new-key-modifier"></select></form></td>
 action="javascript:void(0)"><button id="add-new-key">Add</button></form></td>
 </td>
 </tr>
+</thead>
+<tbody></tbody>
+<tfoot>
 <tr>
 <th class="code" colspan="2">Key Code</th>
 <th class="code">Char Code</th>
@@ -78,14 +90,6 @@ action="javascript:void(0)"><button id="add-new-key">Add</button></form></td>
 <th></th>
 </tr>
 </tfoot>
-</table>
-
-<table id="modifiers">
-<thead>
-<tr><th class="modifier">Modifier</th><th class="name">Name</th></tr>
-</thead>
-<tbody>
-</tbody>
 </table>
 
 <textarea id="layout-json"></textarea>

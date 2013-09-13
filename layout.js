@@ -82,7 +82,7 @@ $(document).ready(function () {
 				key.charCode = press.charCode;
 			}
 
-			addKey(key);
+			addKey(key).find('input[name=name]').focus().select();
 		}
 
 		down  = null;
@@ -102,7 +102,7 @@ $(document).ready(function () {
 		$('#new-char-code').prop('disabled',!this.checked);	
 	});
 
-	$('#layout tfoot form').submit(function (event) {
+	$('#layout thead form, #layout tfoot form').submit(function (event) {
 		event.preventDefault();
 
 		var $keyCode  = $('#new-key-code').removeClass('invalid');
@@ -119,8 +119,7 @@ $(document).ready(function () {
 			altKey:      modifier === 'altKey',
 			shiftKey:    modifier === 'shiftKey',
 			metaKey:     modifier === 'metaKey',
-			altGraphKey: modifier === 'altGraphKey',
-			modifiers:   modifier === 'none' ? 0 : 1
+			altGraphKey: modifier === 'altGraphKey'
 		};
 
 		if (hasChar) {
@@ -145,7 +144,7 @@ $(document).ready(function () {
 		}
 
 		if (valid) {
-			addKey(key, keyName);
+			addKey(key, keyName).find('input[name=name]').focus().select();
 		}
 	});
 
@@ -196,36 +195,39 @@ $(document).ready(function () {
 	
 		if (elem.length === 0) {
 			var tbody = $("#layout tbody");
-			var hasChar = 'charCode' in key;
 			var modifier = getModifier(key);
 			var hex = key.keyCode.toString(16).toUpperCase();
-			var defaultName = 'K+'+hex;
 			var valid;
 
 			if (keyName) {
-				valid = keyName === defaultName || isNameValid(keyName);
+				valid = isNameValid(keyName);
 			}
 			else {
-				keyName = hasChar ?
-					String.fromCharCode(key.charCode).toUpperCase() : defaultName;
+				var defaultName = 'K+'+hex;
 
-				valid = keyName === defaultName || isNameValid(keyName);
-				if (!valid) keyName = defaultName;
+				if (key.charCode) {
+					keyName = String.fromCharCode(key.charCode).toUpperCase();
+					valid   = isNameValid(keyName);
+
+					if (!valid) keyName = defaultName;
+				}
+				else {
+					keyName = defaultName;
+					valid   = false;
+				}
 			}
 
 			elem = renderKey(key, keyName);
-			
+
 			if (modifier) {
 				layout.modifierKeys[key.keyCode] = modifier;
 			}
 
 			if (valid) {
 				var unique = true;
-				var otherKey;
 				var lower = keyName.toLowerCase();
-				for (otherKey in layout.keys) {
-					var otherName = layout.keys[otherKey].toLowerCase();
-					if (otherName === lower) {
+				for (var otherKey in layout.keys) {
+					if (Number(otherKey) !== key.keyCode && layout.keys[otherKey].toLowerCase() === lower) {
 						unique = false;
 						break;
 					}
@@ -237,7 +239,7 @@ $(document).ready(function () {
 				else {
 					elem.find('input[name=name]').addClass('not-unique').
 						attr('title', "This name is already used by key "+
-						otherKey+" (0x"+otherKey.toString(16).toUpperCase()+")");
+						key.keyCode+" (0x"+key.keyCode.toString(16).toUpperCase()+")");
 				}
 			}
 
@@ -254,11 +256,21 @@ $(document).ready(function () {
 			}
 
 			$("#layout-json").val(JSON.stringify(layout));
-			elem.find('input[name=name]').focus().select();
 		}
 		else {
-			elem.find('input[name=name]').val(keyName).change().focus().select();
+			var oldKey = elem.data('key');
+			var oldModifier = getModifier(oldKey);
+			var modifier    = getModifier(key);
+			if (oldModifier !== modifier) {
+				elem.data('key',key).find('.modifier').text(modifier ? layout.modifiers[modifier] : '');
+			}
+			
+			if (keyName) {
+				elem.find('input[name=name]').val(keyName);
+			}
 		}
+
+		return elem;
 	}
 
 	$('#new-key-code, #new-char-code').change(function (event) {
@@ -384,12 +396,45 @@ $(document).ready(function () {
 		return state;
 	}
 
-	$("#clear").click(function (event) {
-		if (confirm("Do you really want to clear the layout and loose any changes?")) {
+	$("#clear-layout").click(function (event) {
+		if (confirm("Do you really want to clear the layout and lose any changes?")) {
 			layout = new Layout();
 			$("#layout tbody").empty();
 			$("#layout-json").val('');
 			initModifiers();
 		}
 	});
+	
+
+	$("#default-layout").click(function (event) {
+		if (confirm("Do you really want to load the default layout and lose any changes?")) {
+			layout = $.extend(true, new Layout(), $.hotkeys.defaultLayout);
+			$("#layout tbody").empty();
+			$("#layout-json").val(layout.name||'');
+			initModifiers();
+
+			for (var keyCode in layout.keys) {
+				var key = {
+					keyCode:     Number(keyCode),
+					ctrlKey:     false,
+					altKey:      false,
+					metaKey:     false,
+					shiftKey:    false,
+					altGraphKey: false
+				};
+				var modifier = layout.modifierKeys[keyCode];
+				if (modifier) {
+					key[modifier] = true;
+				}
+				addKey(key, layout.keys[keyCode]);
+			}
+		}
+	});
+
+	if (window.saveAs) {
+		$('#save-layout').show().click(function (event) {
+			var blob = new Blob([JSON.stringify(layout)],{type: "application/json"});
+			window.saveAs(blob, (layout.name||'layout')+'.json');
+		});
+	}
 });
