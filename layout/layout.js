@@ -1,4 +1,4 @@
-// TODO: save/load layout
+// TODO: load layout
 if (!Object.keys) {
 	Object.keys = function (obj) {
 		var keys = [];
@@ -164,7 +164,7 @@ $(document).ready(function () {
 		}
 
 		var del = $('<td class="delete">').appendTo(elem);
-		$('<button type="button">').text('Delete').click(deleteKey).appendTo(del);
+		$('<button type="button">').html('&times;').click(deleteKey).appendTo(del);
 
 		return elem;
 	}
@@ -435,6 +435,20 @@ $(document).ready(function () {
 		$('#save-layout').show().click(function (event) {
 			var blob = new Blob([JSON.stringify(layout)],{type: "application/json"});
 			window.saveAs(blob, (layout.name||'layout')+'.json');
+		});
+	}
+
+	if (!window.FileReader) {
+		window.FileReader = window.MozFileReader || window.WebKitFileReader || window.MSFileReader;
+	}
+	
+	if (window.FileReader) {
+		$('#open-layout').show().find('input[type=file]').change(function (event) {
+			// TODO
+			alert("TODO");
+
+			// clear file input so we get a change event even if the same file is opened twice:
+			$(this).clone().replaceAll(this);
 		});
 	}
 });
