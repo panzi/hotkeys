@@ -216,7 +216,7 @@
 	}
 
 	function addKey (keys, key, name) {
-		if (name !== '-' && /[- \t\n\r\v]/.test(name)) {
+		if (!/^[^ \t\r\n\v][^- \t\r\n\v]*$/.test(name)) {
 			throw new SyntaxError(format($.hotkeys.strings.key_name_spaces, {name: name}));
 		}
 		else if (/^K\+[0-9A-F]+$/i.test(name)) {
@@ -756,7 +756,7 @@
 			unmatched_left:      'Unmatched left curly bracket "{" in format.',
 			unmatched_right:     'Unmatched right curly bracket "}" in format.',
 			hotkey_empty:        'Hotkey may not be empty.',
-			key_name_spaces:     'Illegal key name {name}: Key names may not include breakable spaces (" \\t\\n\\r\\v") or dashes ("-").',
+			key_name_spaces:     'Illegal key name {name}: Key names may not include breakable spaces (" \\t\\n\\r\\v") or except for the first character dashes ("-").',
 			key_name_k_xxx:      'Illegal key name {name}: Key names may not be ot the format K+XXX (where XXX is a hexadecimal number).',
 			key_name_empty:      'Illegal hotkey {hotkey}: Key names may not be empty.',
 			key_name_unknown:    'Illegal hotkey {hotkey}: Unknown key name "{key}".',

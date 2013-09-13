@@ -18,8 +18,15 @@ input.invalid {
 	color: white;
 	background: red;
 }
+input.not-unique {
+	background: #ffc600;
+}
 input[type=number] {
 	width: 5em;
+}
+#multiple-modifiers {
+	font-weight: bold;
+	color: red;
 }
 </style>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -35,6 +42,8 @@ input[type=number] {
 
 <button id="clear">Clear Layout</button>
 
+<div id="multiple-modifiers">Please press only one key at a time!</div>
+
 <table id="layout">
 <thead>
 <tr>
@@ -48,12 +57,17 @@ input[type=number] {
 <tbody></tbody>
 <tfoot>
 <tr>
-<td colspan="2" class="code"><input type="number" id="new-key-code"/></td>
-<td class="code"><input type="checkbox" id="has-new-char-code"/>
-<input type="number" id="new-char-code" disabled/></td>
-<td class="name"><input type="text" id="new-key-name"/></td>
-<td class="modifier"><select id="new-key-modifier"></select></td>
-<td><button id="add-new-key">Add</button></td>
+<td colspan="2" class="code"><form
+action="javascript:void(0)"><input type="number" min="1" id="new-key-code"/></form></td>
+<td class="code"><form
+action="javascript:void(0)"><input type="checkbox" id="has-new-char-code"/>
+<input type="number" min="1" id="new-char-code" disabled/></form></td>
+<td class="name"><form
+action="javascript:void(0)"><input type="text" id="new-key-name"/></form></td>
+<td class="modifier"><form
+action="javascript:void(0)"><select id="new-key-modifier"></select></form></td>
+<td><form
+action="javascript:void(0)"><button id="add-new-key">Add</button></form></td>
 </td>
 </tr>
 <tr>
@@ -65,7 +79,6 @@ input[type=number] {
 </tr>
 </tfoot>
 </table>
-<div id="multiple-modifiers">Please press only one key at a time!</div>
 
 <table id="modifiers">
 <thead>
