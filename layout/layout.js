@@ -365,37 +365,28 @@ $(document).ready(function () {
 		}
 	}
 
-	function scrollIntoViewIfNeeded (elem) {
-		if ('scrollIntoViewIfNeeded' in elem) {
-			elem.scrollIntoViewIfNeeded();
-		}
-		else if ('scrollIntoView' in elem) {
-			elem.scrollIntoView();
-		}
-	}
-
 	function navigateKey (event) {
 		var cursor, elem;
 		switch (event.keyCode) {
 			case 38: // Up
 				cursor = getCursor(this);
-				elem = $(this).parents('tr').first().prev('tr').find('input[type=text]')[0];
-				if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem) {
+				elem = $(this).parents('tr').first().prev('tr').find('input[type=text]');
+				if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem.length > 0) {
 					event.preventDefault();
 					elem.focus();
-					setCursor(elem, cursor);
-					scrollIntoViewIfNeeded(elem);
+					setCursor(elem[0], cursor);
+					elem.scrollIntoViewIfNeeded();
 				}
 				break;
 
 			case 40: // Down
 				cursor = getCursor(this);
-				elem = $(this).parents('tr').first().next('tr').find('input[type=text]')[0];
-				if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem) {
+				elem = $(this).parents('tr').first().next('tr').find('input[type=text]');
+				if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem.length > 0) {
 					event.preventDefault();
 					elem.focus();
-					setCursor(elem, cursor);
-					scrollIntoViewIfNeeded(elem);
+					setCursor(elem[0], cursor);
+					elem.scrollIntoViewIfNeeded();
 				}
 				break;
 		}

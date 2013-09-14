@@ -19,6 +19,7 @@
 	//       I guess this means that multiple actions will be bindable to one hotkey.
 	//
 	//       And/or maybe remove actions/action callbacks from here and handle them via the jQuery event system?
+	//       And/or trigger events with names like "hotkey:action:ACTION". This limits what is an allowed action name.
 
 	function format (fmt, kwargs) {
 		var args = arguments;
