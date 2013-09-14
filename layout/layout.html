@@ -3,93 +3,9 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/>
 <title>Keyboard Layout</title>
-<style type="text/css">
-#multiple-modifiers {
-	visibility: hidden;
-}
-input[type=number],
-#layout .code {
-	text-align: right;
-}
-#layout tbody .code {
-	font-family: monospace;
-}
-input.invalid {
-	color: white;
-	background: red;
-}
-input.not-unique {
-	background: #ffc600;
-}
-input[type=number] {
-	width: 5em;
-}
-#multiple-modifiers {
-	font-weight: bold;
-	color: red;
-}
-.button {
-	display: inline-block;
-}
-button, .button {
-	margin: 2px;
-	padding: 2px 6px;
-	text-align: center;
-	box-sizing: content-box;
-	border: 1px solid #a0a0a0;
-	border-radius: 2px;
-	font-size: 13px;
-	color: black;
-
-	background: #e2e2e2; /* Old browsers */
-	background: -moz-linear-gradient(top, #ffffff 0%, #e2e2e2 100%); /* FF3.6+ */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#ffffff), color-stop(100%,#e2e2e2)); /* Chrome,Safari4+ */
-	background: -webkit-linear-gradient(top, #ffffff 0%,#e2e2e2 100%); /* Chrome10+,Safari5.1+ */
-	background: -o-linear-gradient(top, #ffffff 0%,#e2e2e2 100%); /* Opera 11.10+ */
-	background: -ms-linear-gradient(top, #ffffff 0%,#e2e2e2 100%); /* IE10+ */
-	background: linear-gradient(to bottom, #ffffff 0%,#e2e2e2 100%); /* W3C */
-}
-button:hover, .button:hover, .file-button:hover .button {
-	border-color: #707070;
-}
-button:active, .button:active, .file-button:active .button {
-	background: #e2e2e2; /* Old browsers */
-	background: -moz-linear-gradient(top, #e2e2e2 0%, #ffffff 100%); /* FF3.6+ */
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#e2e2e2), color-stop(100%,#ffffff)); /* Chrome,Safari4+ */
-	background: -webkit-linear-gradient(top, #e2e2e2 0%,#ffffff 100%); /* Chrome10+,Safari5.1+ */
-	background: -o-linear-gradient(top, #e2e2e2 0%,#ffffff 100%); /* Opera 11.10+ */
-	background: -ms-linear-gradient(top, #e2e2e2 0%,#ffffff 100%); /* IE10+ */
-	background: linear-gradient(to bottom, #e2e2e2 0%,#ffffff 100%); /* W3C */
-}
-.file-button {
-	position: relative;
-	overflow: hidden;
-	margin: 0;
-	padding: 0;
-	border-style: none;
-}
-.file-button input[type=file] {
-	position: absolute;
-	margin: 0;
-	padding: 0;
-	border-style: none;
-	right: 0;
-	top: 0;
-	width: 100%;
-	height: 100%;
-	opacity: 0;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="layout.css"/>
 <!--[if IE]>
-<style type="text/css">
-button, .button {
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#e2e2e2',GradientType=0 ); /* IE6-9 */
-}
-.file-button input[type=file] {
-	zoom: 3;
-	-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
-}
-</style>
+<link rel="stylesheet" type="text/css" href="layout.ie.css"/>
 <![endif]-->
 <script type="text/javascript" src="Blob.js"></script>
 <script type="text/javascript" src="FileSaver.js"></script>
@@ -100,7 +16,19 @@ button, .button {
 <body>
 <h1>Keyboard Layout</h1>
 
-<label>Layout Name: <input id="layout-name" type="text"/></label><br/>
+<a id="open-layout" class="file-button" style="display:none;"><span
+	class="button">Open...</span><input type="file"/></a>
+<button id="save-layout" style="display:none;">Save As...</button>
+<button id="default-layout">Default</button>
+<button id="clear-layout">Clear</button>
+
+<label>Layout Name: <input id="layout-name" type="text"/></label>
+
+<br/>
+
+<label>Press all keys here (one at a time): <input id="input-keys" type="text" autofocus/></label>
+
+<div id="multiple-modifiers">Please press only one key at a time!</div>
 
 <table id="modifiers">
 <thead>
@@ -109,16 +37,6 @@ button, .button {
 <tbody>
 </tbody>
 </table>
-
-<label>Press all keys here (one at a time): <input id="input-keys" type="text" autofocus/></label>
-
-<button id="clear-layout">Clear</button>
-<button id="default-layout">Default</button>
-<a id="open-layout" class="file-button" style="display:none;"><span
-	class="button">Open...</span><input type="file"/></a>
-<button id="save-layout" style="display:none;">Save As...</button>
-
-<div id="multiple-modifiers">Please press only one key at a time!</div>
 
 <table id="layout">
 <thead>
@@ -155,8 +73,6 @@ button, .button {
 </tr>
 </tfoot>
 </table>
-
-<textarea id="layout-json"></textarea>
 
 </body>
 </html>

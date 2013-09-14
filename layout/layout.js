@@ -45,8 +45,6 @@ $(document).ready(function () {
 		return /^[^ \t\r\n\v][^- \t\r\n\v]*$/.test(name) && !/^K\+[0-9a-f]+$/i.test(name);
 	}
 
-	$("#layout-json").val(JSON.stringify(layout));
-
 	$("#input-keys").blur(function (event) {
 		downKeys = {};
 		$("#multiple-modifiers").css('visibility','hidden');
@@ -156,7 +154,7 @@ $(document).ready(function () {
 		$('<td class="code">').text('charCode' in key ? key.charCode : '').appendTo(elem);
 		var name = $('<td class="name">').appendTo(elem);
 		var form = $('<form action="javascript:void(0)">').submit(submitName).appendTo(name);
-		var input = $('<input type="text" name="name">').val(keyName).change(changeKey).appendTo(form);
+		var input = $('<input type="text" name="name">').val(keyName).change(changeKey).keydown(navigateKey).appendTo(form);
 		var mod = $('<td class="modifier">').appendTo(elem);
 		var modifier = getModifier(key);
 		if (modifier) {
@@ -254,8 +252,6 @@ $(document).ready(function () {
 			else {
 				elem.insertAfter('#key_'+keys[index - 1]);
 			}
-
-			$("#layout-json").val(JSON.stringify(layout));
 		}
 		else {
 			var oldKey = elem.data('key');
@@ -341,8 +337,67 @@ $(document).ready(function () {
 			this.value = def;
 		}
 		elem.removeClass('invalid not-unique');
-		
-		$("#layout-json").val(JSON.stringify(layout));
+	}
+
+	function getCursor (input) {
+		if ('selectionStart' in input) {
+			// Standard-compliant browsers
+			return input.selectionStart;
+		} else if (document.selection) {
+			// IE
+			var sel = document.selection.createRange();
+			sel.moveStart('character', -input.value.length);
+			return sel.text.length;
+		}
+	}
+
+	function setCursor (input, cursor) {
+		if ('selectionStart' in input) {
+			input.selectionStart = cursor;
+			input.selectionEnd   = cursor;
+		}
+		else if (document.selection) {
+			var sel = document.selection.createRange();
+			sel.moveStart('character', -input.value.length);
+			sel.moveStart('character', cursor);
+			sel.moveEnd('character', 0);
+			sel.select();
+		}
+	}
+
+	function scrollIntoViewIfNeeded (elem) {
+		if ('scrollIntoViewIfNeeded' in elem) {
+			elem.scrollIntoViewIfNeeded();
+		}
+		else if ('scrollIntoView' in elem) {
+			elem.scrollIntoView();
+		}
+	}
+
+	function navigateKey (event) {
+		var cursor, elem;
+		switch (event.keyCode) {
+			case 38: // Up
+				cursor = getCursor(this);
+				elem = $(this).parents('tr').first().prev('tr').find('input[type=text]')[0];
+				if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem) {
+					event.preventDefault();
+					elem.focus();
+					setCursor(elem, cursor);
+					scrollIntoViewIfNeeded(elem);
+				}
+				break;
+
+			case 40: // Down
+				cursor = getCursor(this);
+				elem = $(this).parents('tr').first().next('tr').find('input[type=text]')[0];
+				if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem) {
+					event.preventDefault();
+					setCursor(elem, cursor);
+					scrollIntoViewIfNeeded(elem);
+				}
+				break;
+		}
 	}
 
 	function submitModifierName (event) {
@@ -354,8 +409,6 @@ $(document).ready(function () {
 		var name = layout.modifiers[modifier] = this.value;
 
 		$('#layout .'+modifier+', #new-key-modifier option[value='+modifier+']').text(name);
-
-		$("#layout-json").val(JSON.stringify(layout));
 	}
 
 	function deleteKey (event) {
@@ -364,8 +417,6 @@ $(document).ready(function () {
 		delete layout.keys[key.keyCode];
 		delete layout.modifierKeys[key.keyCode];
 		elem.remove();
-
-		$("#layout-json").val(JSON.stringify(layout));
 	}
 
 	function getState (event) {
@@ -400,7 +451,7 @@ $(document).ready(function () {
 		if (confirm("Do you really want to clear the layout and lose any changes?")) {
 			layout = new Layout();
 			$("#layout tbody").empty();
-			$("#layout-json").val('');
+			$("#layout-name").val('');
 			initModifiers();
 		}
 	});
@@ -408,28 +459,32 @@ $(document).ready(function () {
 
 	$("#default-layout").click(function (event) {
 		if (confirm("Do you really want to load the default layout and lose any changes?")) {
-			layout = $.extend(true, new Layout(), $.hotkeys.defaultLayout);
-			$("#layout tbody").empty();
-			$("#layout-json").val(layout.name||'');
-			initModifiers();
-
-			for (var keyCode in layout.keys) {
-				var key = {
-					keyCode:     Number(keyCode),
-					ctrlKey:     false,
-					altKey:      false,
-					metaKey:     false,
-					shiftKey:    false,
-					altGraphKey: false
-				};
-				var modifier = layout.modifierKeys[keyCode];
-				if (modifier) {
-					key[modifier] = true;
-				}
-				addKey(key, layout.keys[keyCode]);
-			}
+			loadLayout($.hotkeys.defaultLayout);
 		}
 	});
+
+	function loadLayout (newLayout) {
+		layout = $.extend(true, new Layout(), newLayout);
+		$("#layout tbody").empty();
+		$("#layout-name").val(layout.name||'');
+		initModifiers();
+
+		for (var keyCode in layout.keys) {
+			var key = {
+				keyCode:     Number(keyCode),
+				ctrlKey:     false,
+				altKey:      false,
+				metaKey:     false,
+				shiftKey:    false,
+				altGraphKey: false
+			};
+			var modifier = layout.modifierKeys[keyCode];
+			if (modifier) {
+				key[modifier] = true;
+			}
+			addKey(key, layout.keys[keyCode]);
+		}
+	}
 
 	if (window.saveAs) {
 		$('#save-layout').show().click(function (event) {
@@ -444,8 +499,81 @@ $(document).ready(function () {
 	
 	if (window.FileReader) {
 		$('#open-layout').show().find('input[type=file]').change(function (event) {
-			// TODO
-			alert("TODO");
+			if (this.files.length !== 1) {
+				alert("Please select a file to open.");
+				return;
+			}
+
+			layout = new Layout();
+			$("#layout tbody").empty();
+			$("#layout-name").val('');
+
+			var file = this.files[0];
+			var reader = new FileReader();
+
+			reader.onload = function (event) {
+				try {
+					var newLayout = JSON.parse(event.target.result);
+
+					if (typeof newLayout !== 'object') {
+						throw new TypeError("Not a layout file");
+					}
+
+					loadLayout(newLayout);
+				}
+				catch (e) {
+					var msg = String(e);
+
+					if (file.name) {
+						alert("Error reading file \u00bb"+file.name+"\u00ab: "+msg);
+					}
+					else {
+						alert("Error reading file: "+msg);
+					}
+				}
+			};
+
+			reader.onerror = function (event) {
+				var msg;
+
+				switch (this.error.code) {
+					case FileError.ABORT_ERR:
+						msg = 'Aborted';
+						break;
+
+					case FileError.ENCODING_ERR:
+						msg = 'Encoding Error';
+						break;
+
+					case FileError.NOT_FOUND_ERR:
+						msg = 'File not found';
+						break;
+
+					case FileError.NOT_READABLE_ERR:
+						msg = 'File is not readable';
+						break;
+
+					case FileError.NO_MODIFICATION_ALLOWED_ERR:
+						msg = 'File is not writeable';
+						break;
+
+					case FileError.SECURITY_ERR:
+						msg = 'Security Error';
+						break;
+
+					default:
+						msg = 'Error code ' + this.error.code;
+				}
+
+				if (file.name) {
+					alert("Error reading file \u00bb"+file.name+"\u00ab: "+msg);
+				}
+				else {
+					alert("Error reading file: "+msg);
+				}
+			};
+
+			reader.readAsText(file);
 
 			// clear file input so we get a change event even if the same file is opened twice:
 			$(this).clone().replaceAll(this);

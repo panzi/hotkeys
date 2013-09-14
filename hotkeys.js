@@ -11,8 +11,12 @@
 	// $(document).hotkeys('action',  'Ctrl-D') -> {name: 'delete', lable: 'Delete', action: function () {}} or null
 	// $(document).hotkeys('actions') -> {'delete': {name: 'delete', lable: 'Delete', ... }, ... }
 	// $(document).hotkeys('clear') -> this
-	// $(elem).hotkeys('block', true) -> this
-	// $(elem).hotkeys('unblock', true) -> this
+	// $(elem).hotkeys('block', 'non-modifier') -> this
+	// $(elem).hotkeys('unblock', 'non-compose') -> this
+	// $(elem).hotkeys('unblock', 'all') -> this
+	//
+	// TODO: Add an optional selector to (un)bind etc.
+	//       I guess this means that multiple actions will be bindable to one hotkey.
 
 	function format (fmt, kwargs) {
 		var args = arguments;
