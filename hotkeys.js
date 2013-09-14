@@ -17,6 +17,8 @@
 	//
 	// TODO: Add an optional selector to (un)bind etc.
 	//       I guess this means that multiple actions will be bindable to one hotkey.
+	//
+	//       And/or maybe remove actions/action callbacks from here and handle them via the jQuery event system?
 
 	function format (fmt, kwargs) {
 		var args = arguments;

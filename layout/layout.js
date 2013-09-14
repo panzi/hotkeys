@@ -32,7 +32,7 @@ $(document).ready(function () {
 			$('<td class="modifier">').text(modifier).appendTo(tr);
 			var name = $('<td class="name">').appendTo(tr);
 			var form = $('<form action="javascript:void(0)">').submit(submitModifierName).appendTo(name);
-			$('<input type="text" name="name">').val(modifierName).change(changeModifier).appendTo(form);
+			$('<input type="text" name="name">').val(modifierName).change(changeModifier).keydown(navigateKey).appendTo(form);
 			$('<option>',{value:modifier}).text(modifierName).appendTo(select);
 
 			tbody.append(tr);
@@ -393,6 +393,7 @@ $(document).ready(function () {
 				elem = $(this).parents('tr').first().next('tr').find('input[type=text]')[0];
 				if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem) {
 					event.preventDefault();
+					elem.focus();
 					setCursor(elem, cursor);
 					scrollIntoViewIfNeeded(elem);
 				}
