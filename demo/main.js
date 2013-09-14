@@ -9,14 +9,16 @@ function handler (event) {
 }
 
 $(document).
-	hotkeys('bind', 'Alt-F Alt-G',      'foo').
-	hotkeys('bind', 'Ctrl-M D',         'bar').
-	hotkeys('bind', 'Ctrl-Alt-Shift-J', 'bar').
-	hotkeys('bind', 'PageUp',           'XXX').
-	hotkeys('bind', 'Alt-Left',         'bar').
-	hotkeys('bind', 'Esc',              'baz').
-	hotkeys('bind', 'X',                'baz').
-	hotkeys('bind', 'Y',                'baz').
+	hotkeys('bind', {
+		'Alt-F Alt-G':      'foo',
+		'Ctrl-M D':         'bar',
+		'Ctrl-Alt-Shift-J': 'bar',
+		'PageUp':           'XXX',
+		'Alt-Left':         'bar',
+		'Esc':              'baz',
+		'X':                'baz',
+		'Y':                'baz'
+	}).
 	hotkeys('unbind', 'Y').
 	on('hotkey:compose', function (event) {
 		$('#compose').text(event.hotkey + ' ...');
@@ -34,8 +36,8 @@ $(document).
 
 if (typeof console !== "undefined") {
 	console.log($(document).hotkeys('bindings'));
-	console.log($(document).hotkeys('bindings','Bar'));
-	console.log($(document).hotkeys('bindings','Bla'));
+	console.log($(document).hotkeys('bindings','bar'));
+	console.log($(document).hotkeys('bindings','bla'));
 	console.log($(document).hotkeys('action','Alt-F Alt-G'));
 	console.log($(document).hotkeys('action','Y'));
 }

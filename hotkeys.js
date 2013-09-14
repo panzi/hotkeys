@@ -462,12 +462,11 @@
 		return /^[-_a-z0-9]+$/i.test(action);
 	}
 
-	function bind (ctx, hotkey_seq, action) {
-		if (!isValidAction(action)) {
+	function bind (node, hotkey_seq, action) {
+		if (!action || !isValidAction(action)) {
 			throw new TypeError(format($.hotkeys.strings.illegal_action_name, {action: action}));
 		}
 		hotkey_seq = $.map($.trim(hotkey_seq).split(/[ \t\r\n\v]+/), normkey);
-		var node = get(ctx);
 		for (var i = 0; i < hotkey_seq.length; ++ i) {
 			var hotkey = hotkey_seq[i];
 			if (hotkey in node.hotkeys) {
@@ -478,6 +477,12 @@
 			}
 		}
 		node.action = action;
+	}
+
+	function bindAll (hotkeys, bindings) {
+		for (var hotkey in bindings) {
+			bind(hotkeys, hotkey, bindings[hotkey]);
+		}
 	}
 
 	function unbind (ctx, hotkey_seq, action) {
@@ -576,7 +581,13 @@
 				return getAction(this,arguments[1]);
 
 			case 'bind':
-				bind(this, arguments[1], arguments[2]);
+				hotkeys = get(this);
+				if (typeof arguments[1] === 'object') {
+					bindAll(hotkeys, arguments[1]);
+				}
+				else {
+					bind(hotkeys, arguments[1], arguments[2]);
+				}
 				return this;
 
 			case 'unbind':
