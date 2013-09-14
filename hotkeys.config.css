@@ -1,9 +1,9 @@
-.hotkey-config .hotkeys {
+.hotkeys-config .hotkeys {
 	list-style: none;
 	margin: 0;
 	padding: 0;
 }
-.hotkey-config .hotkeys li {
+.hotkeys-config .hotkeys li {
 	display: inline-block;
 	margin: 0 1em 0 0;
 	padding: 0;

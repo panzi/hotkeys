@@ -3,23 +3,20 @@ function log (msg) {
 }
 
 function handler (event) {
-	log(event.hotkey + ' -> ' + event.action);
+	if (typeof console !== "undefined") {
+		console.log(event.hotkey + ' -> ' + event.action);
+	}
 }
 
 $(document).
-	hotkeys('action', {name: 'Foo', action: handler, defaultHotkey: 'Alt-M'}).
-	hotkeys('action', 'Bar', handler).
-	hotkeys('action', 'Baz', handler).
-	hotkeys('action', 'Bla', handler).
-	hotkeys('removeAction', 'Bla', handler).
-	hotkeys('bind', 'Alt-F Alt-G',      'Foo').
-	hotkeys('bind', 'Ctrl-M D',         'Bar').
-	hotkeys('bind', 'Ctrl-Alt-Shift-J', 'Bar').
-	hotkeys('bind', 'PageUp',           'Bar').
-	hotkeys('bind', 'Alt-Left',         'Bar').
-	hotkeys('bind', 'Esc',              'Baz').
-	hotkeys('bind', 'X',                'Baz').
-	hotkeys('bind', 'Y',                'Baz').
+	hotkeys('bind', 'Alt-F Alt-G',      'foo').
+	hotkeys('bind', 'Ctrl-M D',         'bar').
+	hotkeys('bind', 'Ctrl-Alt-Shift-J', 'bar').
+	hotkeys('bind', 'PageUp',           'XXX').
+	hotkeys('bind', 'Alt-Left',         'bar').
+	hotkeys('bind', 'Esc',              'baz').
+	hotkeys('bind', 'X',                'baz').
+	hotkeys('bind', 'Y',                'baz').
 	hotkeys('unbind', 'Y').
 	on('hotkey:compose', function (event) {
 		$('#compose').text(event.hotkey + ' ...');
@@ -27,11 +24,12 @@ $(document).
 	on('hotkey:abort-composition', function (event) {
 		$('#compose').empty();
 	}).
+	on('hotkey:action:foo', handler).
+	on('hotkey:action:bar', handler).
+	on('hotkey:action:baz', handler).
 	on('hotkey', function (event) {
 		$('#compose').empty();
-		if (typeof console !== "undefined") {
-			console.log(event.hotkey + ' -> ' + event.action + ' (via jQuery event system)');
-		}
+		log(event.hotkey + ' -> ' + event.action + ' (' + $('#config').hotkeysConfig('action',event.action).label + ')');
 	});
 
 if (typeof console !== "undefined") {
@@ -43,7 +41,14 @@ if (typeof console !== "undefined") {
 }
 
 $(document).ready(function () {
-	$('#config').hotkeysConfig(document);
+	$('#config').hotkeysConfig({
+		context: document,
+		actions: {
+			foo: {label: 'Foo', defaultHotkey: 'Alt-M'},
+			bar: 'Bar',
+			baz: 'Bla Bla'
+		}
+	});
 	$('#protected-text').hotkeys('block','non-modifier');
 	$('#compose-protected-text').hotkeys('block','non-compose');
 	$('#full-protected-text').hotkeys('block','all');

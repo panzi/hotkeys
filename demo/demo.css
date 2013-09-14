@@ -1,5 +1,5 @@
-.hotkey-config button.compose,
-.hotkey-config button.remove {
+.hotkeys-config button.compose,
+.hotkeys-config button.remove {
 	border: none;
 	border-radius: 1em;
 	font-size: 0.8em;
@@ -15,33 +15,33 @@
 	color: #909090;
 }
 
-.hotkey-config button.compose:hover,
-.hotkey-config button.remove:hover,
-.hotkey-config button.compose:active,
-.hotkey-config button.remove:active {
+.hotkeys-config button.compose:hover,
+.hotkeys-config button.remove:hover,
+.hotkeys-config button.compose:active,
+.hotkeys-config button.remove:active {
 	background: #c6c6c6;
 	color: white;
 }
 
-.hotkey-config li button.compose,
-.hotkey-config li button.remove {
+.hotkeys-config li button.compose,
+.hotkeys-config li button.remove {
 	opacity: 0.5;
 }
 
-.hotkey-config li:hover button.compose,
-.hotkey-config li:hover button.remove {
+.hotkeys-config li:hover button.compose,
+.hotkeys-config li:hover button.remove {
 	opacity: 1;
 }
 
-.hotkey-config .name-cell {
+.hotkeys-config .name-cell {
 	width: 100px;
 }
 
-.hotkey-config .hotkeys {
+.hotkeys-config .hotkeys {
 	width: 500px;
 }
 
-.hotkey-config td {
+.hotkeys-config td {
 	vertical-align: top;
 	padding: 0 0 1em 0;
 }

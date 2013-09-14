@@ -1,25 +1,15 @@
 (function ($, undefined) {
-	// $(document).hotkeys('action',  'delete', function (event) { }) -> this
-	// $(document).hotkeys('action',  {name: 'delete', label: 'Delete', action: function (event) { }}) -> this
-	// $(document).hotkeys('removeAction', 'delete') -> this
 	// $(document).hotkeys('bind',    'Ctrl-D',   'delete') -> this
 	// $(document).hotkeys('bind',    'Ctrl-M D', 'delete') -> this
 	// $(document).hotkeys('unbind',  'Ctrl-M D') -> this
 	// $(document).hotkeys('unbind',  'Ctrl-M D', 'delete') -> this
 	// $(document).hotkeys('bindings', 'delete') -> ['Ctrl-D']
 	// $(document).hotkeys('bindings') -> {'delete':['Ctrl-D'], ...}
-	// $(document).hotkeys('action',  'Ctrl-D') -> {name: 'delete', lable: 'Delete', action: function () {}} or null
-	// $(document).hotkeys('actions') -> {'delete': {name: 'delete', lable: 'Delete', ... }, ... }
+	// $(document).hotkeys('action',  'Ctrl-D') -> 'delete' or null
 	// $(document).hotkeys('clear') -> this
 	// $(elem).hotkeys('block', 'non-modifier') -> this
 	// $(elem).hotkeys('unblock', 'non-compose') -> this
 	// $(elem).hotkeys('unblock', 'all') -> this
-	//
-	// TODO: Add an optional selector to (un)bind etc.
-	//       I guess this means that multiple actions will be bindable to one hotkey.
-	//
-	//       And/or maybe remove actions/action callbacks from here and handle them via the jQuery event system?
-	//       And/or trigger events with names like "hotkey:action:ACTION". This limits what is an allowed action name.
 
 	function format (fmt, kwargs) {
 		var args = arguments;
@@ -412,25 +402,17 @@
 			hotkeys.sequence.push({node: node, hotkey: parsed});
 			var hotkey_seq = $.map(hotkeys.sequence, function (el) { return $.extend({},el.hotkey); });
 			hotkey_seq.toString = sequenceToString;
+			var $target = $(event.target);
 			if (node.action) {
-				var action = hotkeys.actions[node.action];
 				var evt = $.Event(event, {type:'hotkey', hotkey:hotkey_seq, action:node.action});
 				hotkeys.sequence = [];
-				if (action) {
-					try {
-						action.action.call(this,evt);
-					}
-					catch (e) {
-						if (typeof console !== 'undefined') {
-							console.error(e);
-						}
-					}
-				}
-				$(this).trigger(evt);
+				$target.trigger(evt);
+				evt = $.Event(event, {type:'hotkey:action:'+node.action, hotkey:hotkey_seq, action:node.action});
+				$target.trigger(evt);
 			}
 			else {
 				var evt = $.Event(event, {type:'hotkey:compose', hotkey:hotkey_seq});
-				$(this).trigger(evt);
+				$target.trigger(evt);
 			}
 		}
 		else if (hotkeys.sequence.length > 0) {
@@ -458,7 +440,6 @@
 
 		if (!hotkeys) {
 			hotkeys = {
-				actions:  {},
 				hotkeys:  {},
 				sequence: []
 			};
@@ -477,24 +458,12 @@
 		return hotkeys;
 	}
 
-	function registerAction (ctx,action) {
-		if (!action.name) {
-			throw new TypeError(format($.hotkeys.strings.illegal_action_name, {action: action.name}));
-		}
-
-		if (typeof action.action !== 'function') {
-			throw new TypeError(format($.hotkeys.strings.action_not_funct, {action: action}));
-		}
-
-		var hotkeys = get(ctx);
-		if (!action.label) {
-			action.label = action.name;
-		}
-		hotkeys.actions[action.name] = action;
+	function isValidAction (action) {
+		return /^[-_a-z0-9]+$/i.test(action);
 	}
 
 	function bind (ctx, hotkey_seq, action) {
-		if (!action) {
+		if (!isValidAction(action)) {
 			throw new TypeError(format($.hotkeys.strings.illegal_action_name, {action: action}));
 		}
 		hotkey_seq = $.map($.trim(hotkey_seq).split(/[ \t\r\n\v]+/), normkey);
@@ -560,9 +529,6 @@
 
 	function actionsWithHotkeys (hotkeys) {
 		var actions = {};
-		for (var action in hotkeys.actions) {
-			actions[action] = [];
-		}
 		_actionsWithHotkeys(hotkeys.hotkeys, [], actions);
 		return actions;
 	}
@@ -583,6 +549,22 @@
 		}
 	}
 
+	function getAction (ctx,hotkey_seq) {
+		var node = ctx.data('hotkeys');
+		if (!node) return null;
+		hotkey_seq = $.map(parseseq(hotkey_seq), makekey);
+		for (var i = 0; i < hotkey_seq.length; ++ i) {
+			var hotkey = hotkey_seq[i];
+			if (hotkey in node.hotkeys) {
+				node = node.hotkeys[hotkey];
+			}
+			else {
+				return null;
+			}
+		}
+		return node.action||null;
+	}
+
 	$.fn.hotkeys = function (method) {
 		var hotkeys;
 		if (arguments.length === 0) {
@@ -591,35 +573,7 @@
 		}
 		switch (method) {
 			case 'action':
-				if (arguments.length > 2) {
-					registerAction(this, {name: arguments[1], action: arguments[2]});
-				}
-				else if (typeof arguments[1] === "object") {
-					registerAction(this, arguments[1]);
-				}
-				else {
-					var node = this.data('hotkeys');
-					if (!node) return null;
-					var hotkey_seq = $.map(parseseq(arguments[1]), makekey);
-					for (var i = 0; i < hotkey_seq.length; ++ i) {
-						var hotkey = hotkey_seq[i];
-						if (hotkey in node.hotkeys) {
-							node = node.hotkeys[hotkey];
-						}
-						else {
-							return null;
-						}
-					}
-					return node.action||null;
-				}
-				return this;
-
-			case 'removeAction':
-				hotkeys = this.data('hotkeys');
-				if (!hotkeys) return null;
-				var action = arguments[1];
-				delete hotkeys.actions[action];
-				return this;
+				return getAction(this,arguments[1]);
 
 			case 'bind':
 				bind(this, arguments[1], arguments[2]);
@@ -640,10 +594,6 @@
 				else {
 					return actionsWithHotkeys(hotkeys);
 				}
-
-			case 'actions':
-				hotkeys = this.data('hotkeys');
-				return hotkeys ? hotkeys.actions : {};
 
 			case 'clear':
 				hotkeys = this.data('hotkeys');
@@ -754,6 +704,7 @@
 		setLayout:     setLayout,
 		getLayout:     function () { return currentLayout; },
 		defaultLayout: defaultLayout,
+		isValidAction: isValidAction,
 		format:        format,
 		strings: {
 			unmatched_left:      'Unmatched left curly bracket "{" in format.',
@@ -764,7 +715,7 @@
 			key_name_empty:      'Illegal hotkey {hotkey}: Key names may not be empty.',
 			key_name_unknown:    'Illegal hotkey {hotkey}: Unknown key name "{key}".',
 			hotkey_non_modifier: 'Illegal hotkey {hotkey}: Hotkeys musst contain exactly one non-modifier key.',
-			illegal_action_name: 'Illegal action name: {action}',
+			illegal_action_name: 'Illegal action name "{action}": Action names may be non-empty strings consisting only of numbers, english letters "-" and "_".',
 			action_not_funct:    'Action is not a function: {action}',
 			unknown_method:      'Unknown method: {method}',
 			illegal_block_type:  'Illegal block type: {type}'
