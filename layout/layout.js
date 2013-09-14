@@ -1,4 +1,3 @@
-// TODO: load layout
 if (!Object.keys) {
 	Object.keys = function (obj) {
 		var keys = [];
@@ -10,6 +9,16 @@ if (!Object.keys) {
 }
 
 $(document).ready(function () {
+	if (/WebKit/.test(navigator.userAgent)) {
+		$(document.body).addClass('webkit');
+	}
+	else if (/MSIE/.test(navigator.userAgent)) {
+		$(document.body).addClass('msie');
+	}
+	else if (/Gecko/.test(navigator.userAgent)) {
+		$(document.body).addClass('moz');
+	}
+
 	function Layout () {
 		this.keys = {};
 		this.modifiers = $.extend({}, $.hotkeys.defaultLayout.modifiers);
@@ -32,7 +41,7 @@ $(document).ready(function () {
 			$('<td class="modifier">').text(modifier).appendTo(tr);
 			var name = $('<td class="name">').appendTo(tr);
 			var form = $('<form action="javascript:void(0)">').submit(submitModifierName).appendTo(name);
-			$('<input type="text" name="name">').val(modifierName).change(changeModifier).keydown(navigateKey).appendTo(form);
+			$('<input type="text" name="name">').val(modifierName).change(changeModifier).appendTo(form);
 			$('<option>',{value:modifier}).text(modifierName).appendTo(select);
 
 			tbody.append(tr);
@@ -40,6 +49,28 @@ $(document).ready(function () {
 	}
 
 	initModifiers();
+
+	$(document).hotkeys('bind', {Up: 'up', Down: 'down'}).
+	on('hotkey:action:up', '#layout tbody input[type=text], #modifiers tbody input[type=text]', function (event) {
+		var cursor = getCursor(event.target);
+		var elem = $(event.target).parents('tr').first().prev('tr').find('input[type=text]');
+		if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem.length > 0) {
+			event.preventDefault();
+			elem.focus();
+			setCursor(elem[0], cursor);
+			elem.scrollIntoViewIfNeeded();
+		}
+	}).
+	on('hotkey:action:down', '#layout tbody input[type=text], #modifiers tbody input[type=text]', function (event) {
+		var cursor = getCursor(event.target);
+		var elem = $(event.target).parents('tr').first().next('tr').find('input[type=text]');
+		if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem.length > 0) {
+			event.preventDefault();
+			elem.focus();
+			setCursor(elem[0], cursor);
+			elem.scrollIntoViewIfNeeded();
+		}
+	});
 
 	function isNameValid (name) {
 		return /^[^ \t\r\n\v][^- \t\r\n\v]*$/.test(name) && !/^K\+[0-9a-f]+$/i.test(name);
@@ -154,7 +185,7 @@ $(document).ready(function () {
 		$('<td class="code">').text('charCode' in key ? key.charCode : '').appendTo(elem);
 		var name = $('<td class="name">').appendTo(elem);
 		var form = $('<form action="javascript:void(0)">').submit(submitName).appendTo(name);
-		var input = $('<input type="text" name="name">').val(keyName).change(changeKey).keydown(navigateKey).appendTo(form);
+		var input = $('<input type="text" name="name">').val(keyName).change(changeKey).appendTo(form);
 		var mod = $('<td class="modifier">').appendTo(elem);
 		var modifier = getModifier(key);
 		if (modifier) {
@@ -162,7 +193,7 @@ $(document).ready(function () {
 		}
 
 		var del = $('<td class="delete">').appendTo(elem);
-		$('<button type="button">').html('&times;').click(deleteKey).appendTo(del);
+		$('<button type="button">',{title:'Remove key'}).html('&times;').click(deleteKey).appendTo(del);
 
 		return elem;
 	}
@@ -362,33 +393,6 @@ $(document).ready(function () {
 			sel.moveStart('character', cursor);
 			sel.moveEnd('character', 0);
 			sel.select();
-		}
-	}
-
-	function navigateKey (event) {
-		var cursor, elem;
-		switch (event.keyCode) {
-			case 38: // Up
-				cursor = getCursor(this);
-				elem = $(this).parents('tr').first().prev('tr').find('input[type=text]');
-				if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem.length > 0) {
-					event.preventDefault();
-					elem.focus();
-					setCursor(elem[0], cursor);
-					elem.scrollIntoViewIfNeeded();
-				}
-				break;
-
-			case 40: // Down
-				cursor = getCursor(this);
-				elem = $(this).parents('tr').first().next('tr').find('input[type=text]');
-				if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem.length > 0) {
-					event.preventDefault();
-					elem.focus();
-					setCursor(elem[0], cursor);
-					elem.scrollIntoViewIfNeeded();
-				}
-				break;
 		}
 	}
 

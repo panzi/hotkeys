@@ -43,8 +43,13 @@ input, select, button, .button {
 *:disabled {
 	opacity: 0.5;
 }
-select, input {
+input[type=checkbox] {
 	-webkit-appearance: none;
+	appearance: none;
+}
+select, input[type=text] {
+	-webkit-appearance: none;
+	-moz-appearance: none;
 	appearance: none;
 }
 input[type=checkbox] {
@@ -114,4 +119,17 @@ select:active, button:active, .button:active, .file-button:active .button {
 	width: 100%;
 	height: 100%;
 	opacity: 0;
+}
+.select-arrow {
+	display: none;
+	margin-left: -16px;
+	-webkit-pointer-events: none;
+	-moz-pointer-events: none;
+	pointer-events: none;
+}
+.webkit select {
+	padding-right: 16px;
+}
+.webkit .select-arrow {
+	display: inline;
 }
