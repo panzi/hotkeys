@@ -51,26 +51,44 @@ $(document).ready(function () {
 	initModifiers();
 
 	$(document).hotkeys('bind', {Up: 'prev', Down: 'next', 'Alt-Up': 'prev-dupl', 'Alt-Down': 'next-dupl'}).
-	on('hotkey:action:prev-dupl', '#layout tbody *', function (event) {
-		// TODO
-	}).
-	on('hotkey:action:next-dupl', '#layout tbody *', function (event) {
-		// TODO
-	}).
-	on('hotkey:action:prev', '#layout tbody input[type=text], #modifiers tbody input[type=text]', function (event) {
+	on('hotkey:action:prev-dupl', '#layout tbody input[name=name]', function (event) {
 		var cursor = getCursor(event.target);
-		var elem = $(event.target).parents('tr').first().prev('tr').find('input[type=text]');
-		if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem.length > 0) {
+		var elem = $(event.target).parents('tr').first().prev('tr');
+		while (elem.length > 0 && elem.find('input.not-unique').length === 0) {
+			elem = elem.prev('tr');
+		}
+		if (elem.length > 0) {
+			elem = elem.find('input[name=name]').focus();
+			setCursor(elem[0], cursor);
+			elem.scrollIntoViewIfNeeded();
+		}
+	}).
+	on('hotkey:action:next-dupl', '#layout tbody input[name=name]', function (event) {
+		var cursor = getCursor(event.target);
+		var elem = $(event.target).parents('tr').first().next('tr');
+		while (elem.length > 0 && elem.find('input.not-unique').length === 0) {
+			elem = elem.next('tr');
+		}
+		if (elem.length > 0) {
+			elem = elem.find('input[name=name]').focus();
+			setCursor(elem[0], cursor);
+			elem.scrollIntoViewIfNeeded();
+		}
+	}).
+	on('hotkey:action:prev', '#layout tbody input[name=name], #modifiers tbody input[name=name]', function (event) {
+		var cursor = getCursor(event.target);
+		var elem = $(event.target).parents('tr').first().prev('tr').find('input[name=name]');
+		if (elem.length > 0) {
 			event.preventDefault();
 			elem.focus();
 			setCursor(elem[0], cursor);
 			elem.scrollIntoViewIfNeeded();
 		}
 	}).
-	on('hotkey:action:next', '#layout tbody input[type=text], #modifiers tbody input[type=text]', function (event) {
+	on('hotkey:action:next', '#layout tbody input[name=name], #modifiers tbody input[name=name]', function (event) {
 		var cursor = getCursor(event.target);
-		var elem = $(event.target).parents('tr').first().next('tr').find('input[type=text]');
-		if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem.length > 0) {
+		var elem = $(event.target).parents('tr').first().next('tr').find('input[name=name]');
+		if (elem.length > 0) {
 			event.preventDefault();
 			elem.focus();
 			setCursor(elem[0], cursor);
