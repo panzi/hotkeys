@@ -54,7 +54,7 @@ $(document).ready(function () {
 	on('hotkey:action:prev-dupl', '#layout tbody input[name=name]', function (event) {
 		var cursor = getCursor(event.target);
 		var elem = $(event.target).parents('tr').first().prev('tr');
-		while (elem.length > 0 && elem.find('input.not-unique').length === 0) {
+		while (elem.length > 0 && elem.find('input.not-unique, input.invalid').length === 0) {
 			elem = elem.prev('tr');
 		}
 		if (elem.length > 0) {
@@ -66,7 +66,7 @@ $(document).ready(function () {
 	on('hotkey:action:next-dupl', '#layout tbody input[name=name]', function (event) {
 		var cursor = getCursor(event.target);
 		var elem = $(event.target).parents('tr').first().next('tr');
-		while (elem.length > 0 && elem.find('input.not-unique').length === 0) {
+		while (elem.length > 0 && elem.find('input.not-unique, input.invalid').length === 0) {
 			elem = elem.next('tr');
 		}
 		if (elem.length > 0) {
