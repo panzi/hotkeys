@@ -50,8 +50,14 @@ $(document).ready(function () {
 
 	initModifiers();
 
-	$(document).hotkeys('bind', {Up: 'up', Down: 'down'}).
-	on('hotkey:action:up', '#layout tbody input[type=text], #modifiers tbody input[type=text]', function (event) {
+	$(document).hotkeys('bind', {Up: 'prev', Down: 'next', 'Alt-Up': 'prev-dupl', 'Alt-Down': 'next-dupl'}).
+	on('hotkey:action:prev-dupl', '#layout tbody *', function (event) {
+		// TODO
+	}).
+	on('hotkey:action:next-dupl', '#layout tbody *', function (event) {
+		// TODO
+	}).
+	on('hotkey:action:prev', '#layout tbody input[type=text], #modifiers tbody input[type=text]', function (event) {
 		var cursor = getCursor(event.target);
 		var elem = $(event.target).parents('tr').first().prev('tr').find('input[type=text]');
 		if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem.length > 0) {
@@ -61,7 +67,7 @@ $(document).ready(function () {
 			elem.scrollIntoViewIfNeeded();
 		}
 	}).
-	on('hotkey:action:down', '#layout tbody input[type=text], #modifiers tbody input[type=text]', function (event) {
+	on('hotkey:action:next', '#layout tbody input[type=text], #modifiers tbody input[type=text]', function (event) {
 		var cursor = getCursor(event.target);
 		var elem = $(event.target).parents('tr').first().next('tr').find('input[type=text]');
 		if (!(event.ctrlKey || event.altKey || event.shiftKey || event.metaKey) && elem.length > 0) {
@@ -219,7 +225,7 @@ $(document).ready(function () {
 		}
 	}
 
-	function addKey (key, keyName) {
+	function addKey (key, keyName, ignoreDuplicates) {
 		var elem = $("#key_"+key.keyCode);
 	
 		if (elem.length === 0) {
@@ -252,26 +258,6 @@ $(document).ready(function () {
 				layout.modifierKeys[key.keyCode] = modifier;
 			}
 
-			if (valid) {
-				var unique = true;
-				var lower = keyName.toLowerCase();
-				for (var otherKey in layout.keys) {
-					if (Number(otherKey) !== key.keyCode && layout.keys[otherKey].toLowerCase() === lower) {
-						unique = false;
-						break;
-					}
-				}
-
-				if (unique) {
-					layout.keys[key.keyCode] = keyName;
-				}
-				else {
-					elem.find('input[name=name]').addClass('not-unique').
-						attr('title', "This name is already used by key "+
-						key.keyCode+" (0x"+key.keyCode.toString(16).toUpperCase()+")");
-				}
-			}
-
 			// in layout.keys are only keys with custom key names
 			var keys = $.map(tbody.children().toArray(), function (elem) { return $.data(elem,'key').keyCode; });
 			keys.push(key.keyCode);
@@ -282,6 +268,10 @@ $(document).ready(function () {
 			}
 			else {
 				elem.insertAfter('#key_'+keys[index - 1]);
+			}
+
+			if (valid && (ignoreDuplicates || markDuplicates()[keyName.toLowerCase()].length < 2)) {
+				layout.keys[key.keyCode] = keyName;
 			}
 		}
 		else {
@@ -324,50 +314,76 @@ $(document).ready(function () {
 
 		$("#input-keys").val('').focus();
 	}
-	
+
+	function markDuplicates () {
+		var rows = $('#layout tbody tr');
+		var keyNames = {};
+		for (var i = 0; i < rows.length; ++ i) {
+			var row = $(rows[i]);
+			var input = row.find('input[name=name]');
+			if (input.removeClass('not-unique').hasClass('invalid')) continue;
+			input.removeAttr('title');
+			var name = input.val().toLowerCase();
+			var keyCode = row.data('key').keyCode;
+			var keys;
+			if (name in keyNames) {
+				keys = keyNames[name];
+			}
+			else {
+				keys = keyNames[name] = [];
+			}
+			keys.push({key: keyCode, input: input});
+		}
+		for (var name in keyNames) {
+			var keys = keyNames[name];
+			if (keys.length > 1) {
+				for (var i = 0; i < keys.length; ++ i) {
+					var key = keys[i];
+					key.input.addClass('not-unique');
+					
+					if (keys.length > 2) {
+						var otherKeys = [];
+						for (var j = 0; j < keys.length; ++ j) {
+							if (j !== i) {
+								otherKeys.push(keys[j].key);
+							}
+						}
+						key.input.attr('title','This name is already used by the keys: '+otherKeys.join(', '));
+					}
+					else {
+						key.input.attr('title','This name is already used by the key: '+(i === 0 ? keys[1].key : keys[0].key));
+					}
+				}
+			}
+		}
+		return keyNames;
+	}
+
 	function changeKey (event) {
-		var elem = $(this);
+		var elem = $(this).removeClass('invalid');
 		var key = elem.parents('tr').data('key');
 		var keyCode = key.keyCode;
 		var def = 'K+'+keyCode.toString(16).toUpperCase();
+		var isdef;
+		var valid = true;
 		if (this.value) {
-			var isdef = def === this.value.toUpperCase();
+			isdef = def === this.value.toUpperCase();
 			if (!isdef && !isNameValid(this.value)) {
-				elem.addClass('invalid').removeClass('not-unique');
-				return;
-			}
-
-			if (isdef) {
-				delete layout.keys[key.keyCode];
-				this.value = def;
-			}
-			else {
-				var unique = true;
-				var otherKey;
-				var lower = this.value.toLowerCase();
-				for (otherKey in layout.keys) {
-					if (Number(otherKey) !== keyCode && layout.keys[otherKey].toLowerCase() === lower) {
-						unique = false;
-						break;
-					}
-				}
-
-				if (unique) {
-					layout.keys[key.keyCode] = this.value;
-				}
-				else {
-					elem.removeClass('invalid').addClass('not-unique').
-						attr('title', "This name is already used by key "+
-						otherKey+" (0x"+otherKey.toString(16).toUpperCase()+")");
-					return;
-				}
+				valid = false;
+				elem.addClass('invalid').attr('title',
+					'Key names may not include breakable spaces (" \\t\\n\\r\\v") or except for the first character dashes ("-").');
 			}
 		}
 		else {
+			isdef = true;
 			delete layout.keys[key.keyCode];
 			this.value = def;
 		}
-		elem.removeClass('invalid not-unique');
+
+		var keyNames = markDuplicates();
+		if (!isdef && valid && keyNames[this.value.toLowerCase()].length <= 1) {
+			layout.keys[key.keyCode] = this.value;
+		}
 	}
 
 	function getCursor (input) {
@@ -478,8 +494,9 @@ $(document).ready(function () {
 			if (modifier) {
 				key[modifier] = true;
 			}
-			addKey(key, layout.keys[keyCode]);
+			addKey(key, layout.keys[keyCode], true);
 		}
+		markDuplicates();
 	}
 
 	if (window.saveAs) {
