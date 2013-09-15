@@ -7,6 +7,7 @@
 <!--[if IE]>
 <link rel="stylesheet" type="text/css" href="layout.ie.css"/>
 <![endif]-->
+<script type="text/javascript" src="shims.js"></script>
 <script type="text/javascript" src="Blob.js"></script>
 <script type="text/javascript" src="FileSaver.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -49,17 +50,12 @@
 <th></th>
 </tr>
 <tr>
-<td colspan="2" class="code"><form
-	action="javascript:void(0)"><input type="number" min="1" id="new-key-code"/></form></td>
-<td class="code"><form
-	action="javascript:void(0)"><input type="checkbox" id="has-new-char-code"/>
+<td colspan="2" class="code"><form><input type="number" min="1" id="new-key-code"/></form></td>
+<td class="code"><form><input type="checkbox" id="has-new-char-code"/>
 <input type="number" min="1" id="new-char-code" disabled/></form></td>
-<td class="name"><form
-	action="javascript:void(0)"><input type="text" id="new-key-name"/></form></td>
-<td class="modifier"><form
-	action="javascript:void(0)"><select id="new-key-modifier"></select><span class="select-arrow">&#x25BE;</span></form></td>
-<td><form
-	action="javascript:void(0)"><button id="add-new-key" title="Add key">+</button></form></td>
+<td class="name"><form><input type="text" id="new-key-name"/></form></td>
+<td class="modifier"><form><select id="new-key-modifier"></select><span class="select-arrow">&#x25BE;</span></form></td>
+<td><form><button id="add-new-key" title="Add key">+</button></form></td>
 </td>
 </tr>
 </thead>

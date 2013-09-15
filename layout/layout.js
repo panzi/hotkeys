@@ -1,14 +1,6 @@
-if (!Object.keys) {
-	Object.keys = function (obj) {
-		var keys = [];
-		for (var key in obj) {
-			keys.push(key);
-		}
-		return keys;
-	};
-}
-
 $(document).ready(function () {
+	"use strict";
+
 	if (/WebKit/.test(navigator.userAgent)) {
 		$(document.body).addClass('webkit');
 	}
@@ -40,7 +32,7 @@ $(document).ready(function () {
 
 			$('<td class="modifier">').text(modifier).appendTo(tr);
 			var name = $('<td class="name">').appendTo(tr);
-			var form = $('<form action="javascript:void(0)">').submit(submitModifierName).appendTo(name);
+			var form = $('<form>').submit(submitModifierName).appendTo(name);
 			$('<input type="text" name="name">').val(modifierName).change(changeModifier).appendTo(form);
 			$('<option>',{value:modifier}).text(modifierName).appendTo(select);
 
@@ -208,7 +200,7 @@ $(document).ready(function () {
 		$('<td class="code">').text('0x'+hex).appendTo(elem);
 		$('<td class="code">').text('charCode' in key ? key.charCode : '').appendTo(elem);
 		var name = $('<td class="name">').appendTo(elem);
-		var form = $('<form action="javascript:void(0)">').submit(submitName).appendTo(name);
+		var form = $('<form>').submit(submitName).appendTo(name);
 		var input = $('<input type="text" name="name">').val(keyName).change(changeKey).appendTo(form);
 		var mod = $('<td class="modifier">').appendTo(elem);
 		var modifier = getModifier(key);
@@ -217,7 +209,7 @@ $(document).ready(function () {
 		}
 
 		var del = $('<td class="delete">').appendTo(elem);
-		$('<button type="button">',{title:'Remove key'}).html('&times;').click(deleteKey).appendTo(del);
+		$('<button>',{type:'button',title:'Remove key'}).html('&times;').click(deleteKey).appendTo(del);
 
 		return elem;
 	}
@@ -243,7 +235,7 @@ $(document).ready(function () {
 		}
 	}
 
-	function addKey (key, keyName, ignoreDuplicates) {
+	function addKey (key, keyName, ignoreDuplicates, dontSort) {
 		var elem = $("#key_"+key.keyCode);
 	
 		if (elem.length === 0) {
@@ -276,16 +268,21 @@ $(document).ready(function () {
 				layout.modifierKeys[key.keyCode] = modifier;
 			}
 
-			// in layout.keys are only keys with custom key names
-			var keys = $.map(tbody.children().toArray(), function (elem) { return $.data(elem,'key').keyCode; });
-			keys.push(key.keyCode);
-			var index = keys.sort(function (lhs,rhs) { return lhs - rhs; }).indexOf(key.keyCode);
-
-			if (index === 0) {
-				tbody.prepend(elem);
+			if (dontSort) {
+				tbody.append(elem);
 			}
 			else {
-				elem.insertAfter('#key_'+keys[index - 1]);
+				// in layout.keys are only keys with custom key names
+				var keys = $.map(tbody.children().toArray(), function (elem) { return $.data(elem,'key').keyCode; });
+				keys.push(key.keyCode);
+				var index = keys.sort(function (lhs,rhs) { return lhs - rhs; }).indexOf(key.keyCode);
+
+				if (index === 0) {
+					tbody.prepend(elem);
+				}
+				else {
+					elem.insertAfter('#key_'+keys[index - 1]);
+				}
 			}
 
 			if (valid && (ignoreDuplicates || markDuplicates()[keyName.toLowerCase()].length < 2)) {
@@ -499,9 +496,16 @@ $(document).ready(function () {
 		$("#layout-name").val(layout.name||'');
 		initModifiers();
 
+		var keyCodes = [];
 		for (var keyCode in layout.keys) {
+			keyCodes.push(Number(keyCode));
+		}
+		keyCodes.sort(function (lhs, rhs) { return lhs - rhs; });
+
+		for (var i = 0; i < keyCodes.length; ++ i) {
+			var keyCode = keyCodes[i];
 			var key = {
-				keyCode:     Number(keyCode),
+				keyCode:     keyCode,
 				ctrlKey:     false,
 				altKey:      false,
 				metaKey:     false,
@@ -512,7 +516,7 @@ $(document).ready(function () {
 			if (modifier) {
 				key[modifier] = true;
 			}
-			addKey(key, layout.keys[keyCode], true);
+			addKey(key, layout.keys[keyCode], true, true);
 		}
 		markDuplicates();
 	}
