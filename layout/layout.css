@@ -40,8 +40,11 @@ input, select, button, .button {
 	border-radius: 2px;
 	color: black;
 }
-*:disabled {
+input:disabled, select:disabled, button:disabled {
 	opacity: 0.5;
+}
+input:disabled {
+	background: #d0d0d0;
 }
 input[type=checkbox] {
 	-webkit-appearance: none;
