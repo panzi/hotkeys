@@ -24,13 +24,13 @@ $(document).
 		$('#compose').text(event.hotkey + ' ...');
 	}).
 	on('hotkey:abort-composition', function (event) {
-		$('#compose').empty();
+		$('#compose').html('&nbsp;');
 	}).
 	on('hotkey:action:foo', handler).
 	on('hotkey:action:bar', handler).
 	on('hotkey:action:baz', handler).
 	on('hotkey', function (event) {
-		$('#compose').empty();
+		$('#compose').html('&nbsp;');
 		log(event.hotkey + ' -> ' + event.action + ' (' + $('#config').hotkeysConfig('action',event.action).label + ')');
 	});
 
