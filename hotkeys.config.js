@@ -207,15 +207,22 @@
 		var tbody = $('<tbody>').appendTo(table);
 
 		var cfg = {context: options.context, actions: {}};
+		var ctx = $(cfg.context);
 		if (options.actions) {
 			for (var name in options.actions) {
 				updateAction(cfg.actions, name, options.actions[name]);
 			}
 		}
-		table.data('hotkeys-config',cfg);
-		var ctx = $(cfg.context);
-
 		var bindings = ctx.hotkeys('bindings');
+		var hasAction = Object.prototype.hasOwnProperty.bind(cfg.actions);
+		for (var name in bindings) {
+			if (!hasAction(name)) {
+				cfg.actions[name] = {label: name};
+			}
+		}
+
+		table.data('hotkeys-config',cfg);
+
 		var heading = $('<tr>').appendTo(thead);
 		var strs = $.hotkeysConfig.strings;
 
@@ -227,12 +234,6 @@
 		var actions = [];
 		for (var actionName in cfg.actions) {
 			actions.push({name: actionName, action: cfg.actions[actionName]});
-		}
-		var hasAction = Object.prototype.hasOwnProperty.bind(cfg.actions);
-		for (var actionName in bindings) {
-			if (!hasAction(actionName)) {
-				actions.push({name: actionName, action: {label: actionName}});
-			}
 		}
 		actions.sort(actionSorter);
 
@@ -265,8 +266,8 @@
 	}
 
 	function actionSorter (lhs,rhs) {
-		lhs = lhs.label;
-		rhs = rhs.label;
+		lhs = lhs.action.label;
+		rhs = rhs.action.label;
 		return lhs < rhs ? -1 : rhs < lhs ? 1 : 0;
 	}
 
@@ -292,49 +293,41 @@
 
 
 	function updateActions ($cfg, actions, new_actions) {
-		var missing = [];
+		var items = [];
 		for (var name in new_actions) {
 			var action = updateAction(actions, name, new_actions[name]);
-			var $action = $cfg.find('.action[data-action="'+name+'"]');
-			if ($action.length === 0) {
-				missing.push({name: name, action: action});
-			}
-			else {
-				$action.children('.name-cell').text(name);
-			}
+			items.push({name: name, action: action});
 		}
-		if (missing.length > 0) {
-			// TODO XXX: rewrite, does not insert on correct place
-			missing.sort(actionSorter);
+		if (items.length > 0) {
+			items.sort(actionSorter);
 			var $actions = $cfg.find('.action[data-action]');
 			var $tbody = $cfg.children('tbody');
 			var strs = $.hotkeysConfig.strings;
 			var bindings = $($cfg.data('hotkeys-config').context).hotkeys('bindings');
 
 			var i = 0, j = 0;
-			for (; i < missing.length; ++ i) {
-				var item = missing[i];
-				var this_label = item.action.label;
-				var inserted = false;
-				for (; j < $actions.length; ++ j) {
-					var $action = $($actions[j]);
-					var label = $action.children('.name-cell').text();
-					if (this_label > label) { // <- nonsense (to late for today)
-						renderAction(item, bindings, strs).insertAfter($action);
-						inserted = true;
-						break;
-					}
+			while (i < items.length && j < $actions.length) {
+				var item = items[i];
+				var item_label = item.action.label;
+				var elem = $actions[j];
+				var elem_name = $.attr(elem,'data-action');
+				var elem_label = actions[elem_name].label;
+
+				if (item.name === elem_name) {
+					$(elem).children('.name-cell').text(item_label);
+					++ i;
 				}
-				if (!inserted) {
-					for (i = missing.length - 1; i >= 0; -- i) {
-						$tbody.prepend(renderAction(missing[i], bindings, strs));
-					}
-					i = missing.length;
+				else if (item_label < elem_label) {
+					renderAction(item, bindings, strs).insertBefore(elem);
+					++ i;
+				}
+				else {
+					++ j;
 				}
 			}
 
-			for (; i < missing.length; ++ i) {
-				$tbody.append(renderAction(missing[i], bindings, strs));
+			for (; i < items.length; ++ i) {
+				$tbody.append(renderAction(items[i], bindings, strs));
 			}
 		}
 	}
