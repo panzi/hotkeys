@@ -36,10 +36,12 @@ won't work with Internet Explorer. Use `$(document)` if you want to register
 document global hotkeys.
 
 
-Methods
--------
+.hotkeys(...)
+-------------
 
 TODO
+
+### jQuery-set methods
 
 #### .hotkeys('bind', hotkey, action) -> jQuery
 
@@ -47,8 +49,8 @@ Bind `hotkey` to `action`.
 
 #### .hotkeys(['bind'], hotkeys) -> jQuery
 #### .hotkeys('unbind', hotkey, action) -> jQuery
-#### .hotkeys('bindings) -> {String: [String]}
-#### .hotkeys('bindings, action) -> [String]
+#### .hotkeys('bindings') -> {String: [String]}
+#### .hotkeys('bindings', action) -> [String]
 #### .hotkeys('action', hotkey) -> String
 #### .hotkeys('clear') -> jQuery
 #### .hotkeys('block', [what]) -> jQuery
@@ -59,6 +61,8 @@ Values for `what`:
  * `all` (default)
 
 #### .hotkeys('unblock', [what]) -> jQuery
+
+### Helper functions
 
 #### $.hotkeys.Hotkey()
 
@@ -105,6 +109,8 @@ Formats:
  * `{{`: Insert `{`.
  * `}}`: Insert `}`.
 
+### Global settings
+
 #### $.hotkeys.defaultLayout
 
 Properties:
@@ -115,6 +121,8 @@ Properties:
  * `modifierAliases`: `{String: String}` (optional)
 
 #### $.hotkeys.strings
+
+Internationalization strings.
 
 Properties:
  * `unmatched_left`
@@ -127,6 +135,11 @@ Properties:
  * `illegal_action_name`
  * `unknown_method`
  * `illegal_block_type`
+
+.hotkeysConfig(...)
+-------------------
+
+### jQuery-set methods
 
 #### .hotkeysConfig(config) -> jQuery
 #### .hotkeysConfig('actions') -> {String: {"label": String, [defaultHotkey: String]}}
@@ -146,3 +159,9 @@ clear them.
 
 #### .hotkeysConfig('removeAction', name) -> jQuery
 #### .hotkeysConfig('clear') -> jQuery
+
+### Global settings
+
+#### $.hotkeysConfig.strings
+
+Internationalization strings.
