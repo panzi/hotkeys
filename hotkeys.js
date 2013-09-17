@@ -1,16 +1,4 @@
 (function ($, undefined) {
-	// $(document).hotkeys('bind',    'Ctrl-D',   'delete') -> this
-	// $(document).hotkeys('bind',    'Ctrl-M D', 'delete') -> this
-	// $(document).hotkeys('unbind',  'Ctrl-M D') -> this
-	// $(document).hotkeys('unbind',  'Ctrl-M D', 'delete') -> this
-	// $(document).hotkeys('bindings', 'delete') -> ['Ctrl-D']
-	// $(document).hotkeys('bindings') -> {'delete':['Ctrl-D'], ...}
-	// $(document).hotkeys('action',  'Ctrl-D') -> 'delete' or null
-	// $(document).hotkeys('clear') -> this
-	// $(elem).hotkeys('block', 'non-modifier') -> this
-	// $(elem).hotkeys('unblock', 'non-compose') -> this
-	// $(elem).hotkeys('unblock', 'all') -> this
-
 	function format (fmt, kwargs) {
 		var args = arguments;
 		var index = 1;
@@ -435,24 +423,24 @@
 		}
 	}
 
-	function get (ctx) {
-		var hotkeys = ctx.data('hotkeys');
+	function init (ctx) {
+		var hotkeys = $.data(ctx,'hotkeys');
 
 		if (!hotkeys) {
 			hotkeys = {
 				hotkeys:  {},
 				sequence: []
 			};
-			if (ctx[0] !== window) {
+			if (ctx !== window) {
 				hotkeys.onabort = function (event) {
-					var hotkeys = ctx.data('hotkeys');
+					var hotkeys = $.data(ctx,'hotkeys');
 					if (hotkeys && hotkeys.sequence.length > 0) {
-						_abort(ctx, hotkeys, event);
+						_abort($(ctx), hotkeys, event);
 					}
 				};
 				$(window).on('blur click',hotkeys.onabort);
 			}
-			ctx.data('hotkeys', hotkeys).on('blur click',abort).keydown(keydown);
+			$(ctx).data('hotkeys', hotkeys).on('blur click',abort).keydown(keydown);
 		}
 
 		return hotkeys;
@@ -486,7 +474,7 @@
 	}
 
 	function unbind (ctx, hotkey_seq, action) {
-		var hotkeys = ctx.data('hotkeys');
+		var hotkeys = $.data(ctx,'hotkeys');
 		if (hotkeys) {
 			_unbind(hotkeys, $.map($.trim(hotkey_seq).split(/[ \t\r\n\v]+/), normkey), 0, action)
 		}
@@ -570,67 +558,9 @@
 		return node.action||null;
 	}
 
-	$.fn.hotkeys = function (method) {
-		var hotkeys;
-		if (arguments.length === 0) {
-			hotkeys = get(this);
-			return this;
-		}
-		switch (method) {
-			case 'action':
-				return getAction(this,arguments[1]);
-
-			case 'bind':
-				hotkeys = get(this);
-				if (typeof arguments[1] === 'object') {
-					bindAll(hotkeys, arguments[1]);
-				}
-				else {
-					bind(hotkeys, arguments[1], arguments[2]);
-				}
-				return this;
-
-			case 'unbind':
-				unbind(this, arguments[1], arguments[2]);
-				return this;
-
-			case 'bindings':
-				hotkeys = this.data('hotkeys');
-				if (!hotkeys) {
-					return [];
-				}
-				else if (arguments[1]) {
-					return actionHotkeys(hotkeys, arguments[1]);
-				}
-				else {
-					return actionsWithHotkeys(hotkeys);
-				}
-
-			case 'clear':
-				hotkeys = this.data('hotkeys');
-				if (hotkeys) {
-					if (hotkeys.onabort) {
-						$(window).off('blur click',hotkeys.onabort);
-					}
-					this.off('blur click',abort).off('keydown',keydown).removeData('hotkeys');
-				}
-				return this;
-
-			case 'block':
-				block(this, arguments[1]);
-				return this;
-
-			case 'unblock':
-				unblock(this, arguments[1]);
-				return this;
-
-			default:
-				throw new TypeError(format($.hotkeys.strings.unknown_method, {method: method}));
-		}
-	};
 
 	function block (elem, what) {
-		switch (what||'non-modifier') {
+		switch (what||'all') {
 			case 'non-modifier':
 				elem.keydown(blockNonModifier);
 				break;
@@ -640,7 +570,7 @@
 				break;
 
 			case 'all':
-				elem.keydown(fullBlockKeydown);
+				elem.keydown(blockAll);
 				break;
 
 			default:
@@ -649,7 +579,7 @@
 	}
 
 	function unblock (elem, what) {
-		switch (what||'non-modifier') {
+		switch (what||'all') {
 			case 'non-modifier':
 				elem.off('keydown',blockNonModifier);
 				break;
@@ -659,7 +589,7 @@
 				break;
 
 			case 'all':
-				elem.off('keydown',fullBlockKeydown);
+				elem.off('keydown',blockAll);
 				break;
 
 			default:
@@ -670,7 +600,7 @@
 	function blockNonModifier (event) {
 		var hotkey = parseEvent(event);
 		if (hotkey.keyCode && !(hotkey.ctrlKey || hotkey.altKey || hotkey.metaKey || hotkey.altGraphKey || hotkey.shiftKey)) {
-			fullBlockKeydown.call(this,event);
+			blockAll.call(this,event);
 		}
 	}
 
@@ -690,7 +620,7 @@
 		}
 	}
 
-	function fullBlockKeydown (event) {
+	function blockAll (event) {
 		event.stopPropagation();
 
 		// cancel any hotkey sequence:
@@ -705,7 +635,90 @@
 		}
 	}
 
+	$.fn.hotkeys = function (method) {
+		switch (arguments.length) {
+		case 0:
+			return this.each(function () {
+				init(this);
+			});
+
+		case 1:
+			if (typeof arguments[0] === 'object') {
+				var bindings = arguments[1];
+				return this.each(function () {
+					bindAll(init(this), bindings);
+				});
+			}
+		}
+
+		switch (method) {
+			case 'action':
+				return getAction(this,arguments[1]);
+
+			case 'bind':
+				if (typeof arguments[1] === 'object') {
+					var bindings = arguments[1];
+					return this.each(function () {
+						bindAll(init(this), bindings);
+					});
+				}
+				else {
+					var hotkey = arguments[1];
+					var action = arguments[2];
+					return this.each(function () {
+						bind(init(this), hotkey, action);
+					});
+				}
+
+			case 'unbind':
+				var hotkey = arguments[1];
+				var action = arguments[2];
+				return this.each(function () {
+					unbind(this, hotkey, action);
+				});
+
+			case 'bindings':
+				var hotkeys = this.data('hotkeys');
+				if (!hotkeys) {
+					return [];
+				}
+				else if (arguments[1]) {
+					return actionHotkeys(hotkeys, arguments[1]);
+				}
+				else {
+					return actionsWithHotkeys(hotkeys);
+				}
+
+			case 'clear':
+				return this.each(function () {
+					var hotkeys = $.data(this,'hotkeys');
+					if (hotkeys) {
+						if (hotkeys.onabort) {
+							$(window).off('blur click',hotkeys.onabort);
+						}
+						$(this).off('blur click',abort).off('keydown',keydown).removeData('hotkeys');
+					}
+				});
+
+			case 'block':
+				var what = arguments[1];
+				return this.each(function () {
+					block($(this), what);
+				});
+
+			case 'unblock':
+				var what = arguments[1];
+				return this.each(function () {
+					unblock($(this), what);
+				});
+
+			default:
+				throw new TypeError(format($.hotkeys.strings.unknown_method, {method: method}));
+		}
+	};
+
 	$.hotkeys = {
+		Hotkey:        Hotkey,
 		norm:          normkey,
 		normSequence:  normseq,
 		stringify:     function (hotkey) { return $.isArray(hotkey) ? $.map(hotkey, makekey).join(' ') : makekey(hotkey); },
@@ -714,9 +727,9 @@
 		parseEvent:    parseEvent,
 		setLayout:     setLayout,
 		getLayout:     function () { return currentLayout; },
-		defaultLayout: defaultLayout,
 		isValidAction: isValidAction,
 		format:        format,
+		defaultLayout: defaultLayout,
 		strings: {
 			unmatched_left:      'Unmatched left curly bracket "{" in format.',
 			unmatched_right:     'Unmatched right curly bracket "}" in format.',
@@ -727,7 +740,6 @@
 			key_name_unknown:    'Illegal hotkey {hotkey}: Unknown key name "{key}".',
 			hotkey_non_modifier: 'Illegal hotkey {hotkey}: Hotkeys musst contain exactly one non-modifier key.',
 			illegal_action_name: 'Illegal action name "{action}": Action names may be non-empty strings consisting only of numbers, english letters "-" and "_".',
-			action_not_funct:    'Action is not a function: {action}',
 			unknown_method:      'Unknown method: {method}',
 			illegal_block_type:  'Illegal block type: {type}'
 		}
