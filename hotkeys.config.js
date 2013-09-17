@@ -210,7 +210,7 @@
 		var ctx = $(cfg.context);
 		if (options.actions) {
 			for (var name in options.actions) {
-				updateAction(cfg.actions, name, options.actions[name]);
+				setAction(cfg.actions, name, options.actions[name]);
 			}
 		}
 		var bindings = ctx.hotkeys('bindings');
@@ -271,7 +271,7 @@
 		return lhs < rhs ? -1 : rhs < lhs ? 1 : 0;
 	}
 
-	function updateAction (actions, name, action) {
+	function setAction (actions, name, action) {
 		if (!$.hotkeys.isValidActionName(name)) {
 			throw new TypeError(format($.hotkeys.strings.illegal_action_name, {action: name}));
 		}
@@ -288,6 +288,9 @@
 		if (!action.label) {
 			action.label = name;
 		}
+		if ('name' in action) {
+			delete action.name;
+		}
 		return action;
 	}
 
@@ -295,7 +298,7 @@
 	function updateActions ($cfg, actions, new_actions) {
 		var items = [];
 		for (var name in new_actions) {
-			var action = updateAction(actions, name, new_actions[name]);
+			var action = setAction(actions, name, new_actions[name]);
 			items.push({name: name, action: action});
 		}
 		if (items.length > 0) {
@@ -365,6 +368,14 @@
 					updateActions($cfg, cfg.actions, new_actions);
 					$cfg.data('hotkeys-config',cfg);
 					return this;
+				}
+				else if (typeof arguments[1] === "object") {
+					var cfg = $cfg.data('hotkeys-config')||{};
+					var new_actions = {};
+					var action = arguments[1];
+					new_actions[action.name] = action;
+					updateActions($cfg, cfg.actions, new_actions);
+					$cfg.data('hotkeys-config',cfg);
 				}
 				else {
 					var cfg = $cfg.data('hotkeys-config');
