@@ -207,7 +207,11 @@
 		var tbody = $('<tbody>').appendTo(table);
 
 		var cfg = {context: options.context, actions: {}};
-		if (options.actions) updateActions(cfg.actions, options.actions);
+		if (options.actions) {
+			for (var name in options.actions) {
+				updateAction(cfg.actions, name, options.actions[name]);
+			}
+		}
 		table.data('hotkeys-config',cfg);
 		var ctx = $(cfg.context);
 
@@ -230,62 +234,117 @@
 				actions.push({name: actionName, action: {label: actionName}});
 			}
 		}
-		actions.sort(function (lhs,rhs) {
-			lhs = lhs.label;
-			rhs = rhs.label;
-			return lhs < rhs ? -1 : rhs < lhs ? 1 : 0;
-		});
+		actions.sort(actionSorter);
 
 		for (var i = 0; i < actions.length; ++ i) {
-			var item = actions[i];
-			var hotkeys = (bindings[item.name]||[]).sort();
-			var tr = $('<tr>',{'class':'action','data-action':item.name});
-			var ul = $('<ul>',{'class':'hotkeys'});
-
-			for (var j = 0; j < hotkeys.length; ++ j) {
-				ul.append(renderHotkey(hotkeys[j]));
-			}
-
-			$('<td>',{'class':'name-cell'}).text(item.action.label).appendTo(tr);
-			$('<td>',{'class':'hotkeys-cell'}).append(ul).appendTo(tr);
-
-			$('<td>',{'class':'add-cell'}).append($('<button>',{'class':'add',title:strs.tooltip_add}).
-				text('+').click(addHotkey)).appendTo(tr);
-
-			$('<td>',{'class':'default-cell'}).append($('<button>',{'class':'default',title:strs.tooltip_default}).
-				text(strs.btn_default).click(resetHotkeys)).appendTo(tr);
-
-			tbody.append(tr);
+			tbody.append(renderAction(actions[i], bindings, strs));
 		}
 
 		return table;
 	}
 
-	function updateActions (actions, new_actions) {
-		var isValidAction = $.hotkeys.isValidAction;
+	function renderAction (item, bindings, strs) {
+		var hotkeys = (bindings[item.name]||[]).sort();
+		var tr = $('<tr>',{'class':'action','data-action':item.name});
+		var ul = $('<ul>',{'class':'hotkeys'});
+
+		for (var j = 0; j < hotkeys.length; ++ j) {
+			ul.append(renderHotkey(hotkeys[j]));
+		}
+
+		$('<td>',{'class':'name-cell'}).text(item.action.label).appendTo(tr);
+		$('<td>',{'class':'hotkeys-cell'}).append(ul).appendTo(tr);
+
+		$('<td>',{'class':'add-cell'}).append($('<button>',{'class':'add',title:strs.tooltip_add}).
+			text('+').click(addHotkey)).appendTo(tr);
+
+		$('<td>',{'class':'default-cell'}).append($('<button>',{'class':'default',title:strs.tooltip_default}).
+			text(strs.btn_default).click(resetHotkeys)).appendTo(tr);
+
+		return tr;
+	}
+
+	function actionSorter (lhs,rhs) {
+		lhs = lhs.label;
+		rhs = rhs.label;
+		return lhs < rhs ? -1 : rhs < lhs ? 1 : 0;
+	}
+
+	function updateAction (actions, name, action) {
+		if (!$.hotkeys.isValidAction(name)) {
+			throw new TypeError(format($.hotkeys.strings.illegal_action_name, {action: name}));
+		}
+		if (typeof action === "string") {
+			action = {label: action};
+		}
+		var old_action = actions[name];
+		if (old_action) {
+			action = $.extend(old_action, action);
+		}
+		else {
+			actions[name] = action;
+		}
+		if (!action.label) {
+			action.label = name;
+		}
+		return action;
+	}
+
+
+	function updateActions ($cfg, actions, new_actions) {
+		var missing = [];
 		for (var name in new_actions) {
-			if (!isValidAction(name)) {
-				throw new TypeError(format($.hotkeys.strings.illegal_action_name, {action: name}));
-			}
-			var action = new_actions[name];
-			if (typeof action === "string") {
-				action = {label: action};
-			}
-			if (!action.label) {
-				action.label = name;
-			}
-			var old_action = actions[name];
-			if (old_action) {
-				$.extend(old_action, action);
+			var action = updateAction(actions, name, new_actions[name]);
+			var $action = $cfg.find('.action[data-action="'+name+'"]');
+			if ($action.length === 0) {
+				missing.push({name: name, action: action});
 			}
 			else {
-				actions[name] = action;
+				$action.children('.name-cell').text(name);
+			}
+		}
+		if (missing.length > 0) {
+			// TODO XXX: rewrite, does not insert on correct place
+			missing.sort(actionSorter);
+			var $actions = $cfg.find('.action[data-action]');
+			var $tbody = $cfg.children('tbody');
+			var strs = $.hotkeysConfig.strings;
+			var bindings = $($cfg.data('hotkeys-config').context).hotkeys('bindings');
+
+			var i = 0, j = 0;
+			for (; i < missing.length; ++ i) {
+				var item = missing[i];
+				var this_label = item.action.label;
+				var inserted = false;
+				for (; j < $actions.length; ++ j) {
+					var $action = $($actions[j]);
+					var label = $action.children('.name-cell').text();
+					if (this_label > label) { // <- nonsense (to late for today)
+						renderAction(item, bindings, strs).insertAfter($action);
+						inserted = true;
+						break;
+					}
+				}
+				if (!inserted) {
+					for (i = missing.length - 1; i >= 0; -- i) {
+						$tbody.prepend(renderAction(missing[i], bindings, strs));
+					}
+					i = missing.length;
+				}
+			}
+
+			for (; i < missing.length; ++ i) {
+				$tbody.append(renderAction(missing[i], bindings, strs));
 			}
 		}
 	}
 
 	$.fn.hotkeysConfig = function (method) {
-		if (typeof method === "object") {
+		if (arguments.length === 0) {
+			var cfg = $cfg.data('hotkeys-config')||{};
+			return this.empty().append(renderConfig(cfg));
+		}
+		else if (typeof method === "object") {
 			return this.empty().append(renderConfig(method));
 		}
 
@@ -299,7 +358,7 @@
 				else {
 					var cfg = $cfg.data('hotkeys-config')||{};
 					if (!cfg.actions) cfg.actions = {};
-					updateActions(cfg.actions, arguments[1]);
+					updateActions($cfg, cfg.actions, arguments[1]);
 					$cfg.data('hotkeys-config',cfg);
 					return this;
 				}
@@ -310,7 +369,7 @@
 					var cfg = $cfg.data('hotkeys-config')||{};
 					var new_actions = {};
 					new_actions[arguments[1]] = arguments[2];
-					updateActions(cfg.actions, new_actions);
+					updateActions($cfg, cfg.actions, new_actions);
 					$cfg.data('hotkeys-config',cfg);
 					return this;
 				}
@@ -320,11 +379,20 @@
 				}
 
 			case "removeAction":
-				var cfg = this.children('.hotkeys-config').data('hotkeys-config');
-				if (cfg) {
-					delete cfg.actions[arguments[1]];
+				var action = arguments[1];
+				if (!$.hotkeys.isValidAction(action)) {
+					throw new TypeError(format($.hotkeys.strings.illegal_action_name, {action: action}));
 				}
+				var $cfg = this.children('.hotkeys-config');
+				var cfg = $cfg.data('hotkeys-config');
+				if (cfg) {
+					delete cfg.actions[action];
+				}
+				$cfg.find('.action[data-action="'+action+'"]').remove();
 				return this;
+
+			case "clear":
+				return this.empty();
 
 			default:
 				throw new TypeError(format($.hotkeys.strings.unknown_method, {method: method}));
