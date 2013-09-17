@@ -66,8 +66,8 @@ Values for `what`:
 
 #### $.hotkeys.Hotkey()
 
-Hotkey constructor. The `$.hotkeys.parse*` functions return Hotkey instances
-(or arrays therof).
+`Hotkey` constructor. The `$.hotkeys.parse*` functions return `Hotkey` instances
+(or arrays thereof).
 
 Properties:
  * `keyCode`: `Number` or `null`
