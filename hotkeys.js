@@ -720,10 +720,10 @@
 	$.hotkeys = {
 		Hotkey:        Hotkey,
 		norm:          normkey,
-		normSequence:  normseq,
+		normComposed:  normseq,
 		stringify:     function (hotkey) { return $.isArray(hotkey) ? $.map(hotkey, makekey).join(' ') : makekey(hotkey); },
 		parse:         parsekey,
-		parseSequence: parseseq,
+		parseComposed: parseseq,
 		parseEvent:    parseEvent,
 		setLayout:     setLayout,
 		getLayout:     function () { return currentLayout; },

@@ -27,7 +27,7 @@
 		var strs = $.hotkeysConfig.strings;
 
 		if (hotkey) {
-			var seq = $.hotkeys.parseSequence(hotkey);
+			var seq = $.hotkeys.parseComposed(hotkey);
 			for (var i = 0; i < seq.length; ++ i) {
 				var k = String(seq[i]);
 				$('<button>',{'class':'change','data-hotkey':k,title:strs.tooltip_change}).
