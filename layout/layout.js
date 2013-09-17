@@ -88,10 +88,6 @@ $(document).ready(function () {
 		}
 	});
 
-	function isNameValid (name) {
-		return /^[^ \t\r\n\v][^- \t\r\n\v]*$/.test(name) && !/^K\+[0-9a-f]+$/i.test(name);
-	}
-
 	$("#input-keys").blur(function (event) {
 		downKeys = {};
 		$("#multiple-modifiers").css('visibility','hidden');
@@ -183,7 +179,7 @@ $(document).ready(function () {
 			valid = false;
 		}
 
-		if (!isNameValid(keyName)) {
+		if (!$.hotkeys.isValidKeyName(keyName)) {
 			$keyName.addClass('invalid');
 			valid = false;
 		}
@@ -245,14 +241,14 @@ $(document).ready(function () {
 			var valid;
 
 			if (keyName) {
-				valid = isNameValid(keyName);
+				valid = $.hotkeys.isValidKeyName(keyName);
 			}
 			else {
 				var defaultName = 'K+'+hex;
 
 				if (key.charCode) {
 					keyName = String.fromCharCode(key.charCode).toUpperCase();
-					valid   = isNameValid(keyName);
+					valid   = $.hotkeys.isValidKeyName(keyName);
 
 					if (!valid) keyName = defaultName;
 				}
@@ -316,7 +312,7 @@ $(document).ready(function () {
 	});
 
 	$('#new-key-name').change(function (event) {
-		if (isNameValid(this.value)) {
+		if ($.hotkeys.isValidKeyName(this.value)) {
 			$(this).removeClass('invalid');
 		}
 		else {
@@ -383,7 +379,7 @@ $(document).ready(function () {
 		var valid = true;
 		if (this.value) {
 			isdef = def === this.value.toUpperCase();
-			if (!isdef && !isNameValid(this.value)) {
+			if (!isdef && !$.hotkeys.isValidKeyName(this.value)) {
 				valid = false;
 				elem.addClass('invalid').attr('title',
 					'Key names may not include breakable spaces (" \\t\\n\\r\\v") or except for the first character dashes ("-").');

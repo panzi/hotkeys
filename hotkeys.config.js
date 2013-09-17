@@ -272,7 +272,7 @@
 	}
 
 	function updateAction (actions, name, action) {
-		if (!$.hotkeys.isValidAction(name)) {
+		if (!$.hotkeys.isValidActionName(name)) {
 			throw new TypeError(format($.hotkeys.strings.illegal_action_name, {action: name}));
 		}
 		if (typeof action === "string") {
@@ -373,7 +373,7 @@
 
 			case "removeAction":
 				var action = arguments[1];
-				if (!$.hotkeys.isValidAction(action)) {
+				if (!$.hotkeys.isValidActionName(action)) {
 					throw new TypeError(format($.hotkeys.strings.illegal_action_name, {action: action}));
 				}
 				var $cfg = this.children('.hotkeys-config');

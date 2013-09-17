@@ -446,12 +446,12 @@
 		return hotkeys;
 	}
 
-	function isValidAction (action) {
-		return /^[-_a-z0-9]+$/i.test(action);
+	function isValidActionName (name) {
+		return /^[-_a-z0-9]+$/i.test(name);
 	}
 
 	function bind (node, hotkey_seq, action) {
-		if (!action || !isValidAction(action)) {
+		if (!action || !isValidActionName(action)) {
 			throw new TypeError(format($.hotkeys.strings.illegal_action_name, {action: action}));
 		}
 		hotkey_seq = $.map($.trim(hotkey_seq).split(/[ \t\r\n\v]+/), normkey);
@@ -727,7 +727,10 @@
 		parseEvent:    parseEvent,
 		setLayout:     setLayout,
 		getLayout:     function () { return currentLayout; },
-		isValidAction: isValidAction,
+		isValidActionName: isValidActionName,
+		isValidKeyName:    function (name) {
+			return /^[^ \t\r\n\v][^- \t\r\n\v]*$/.test(name) && !/^K\+[0-9A-F]+$/i.test(name);
+		},
 		format:        format,
 		defaultLayout: defaultLayout,
 		strings: {
