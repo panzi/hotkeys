@@ -41,28 +41,28 @@ Methods
 
 TODO
 
-### .hotkeys('bind', hotkey, action) -> jQuery
+#### .hotkeys('bind', hotkey, action) -> jQuery
 
 Bind `hotkey` to `action`.
 
-### .hotkeys(['bind'], hotkeys) -> jQuery
-### .hotkeys('unbind', hotkey, action) -> jQuery
-### .hotkeys('bindings) -> {String: [String]}
-### .hotkeys('bindings, action) -> [String]
-### .hotkeys('action', hotkey) -> String
-### .hotkeys('clear') -> jQuery
-### .hotkeys('block', [what]) -> jQuery
+#### .hotkeys(['bind'], hotkeys) -> jQuery
+#### .hotkeys('unbind', hotkey, action) -> jQuery
+#### .hotkeys('bindings) -> {String: [String]}
+#### .hotkeys('bindings, action) -> [String]
+#### .hotkeys('action', hotkey) -> String
+#### .hotkeys('clear') -> jQuery
+#### .hotkeys('block', [what]) -> jQuery
 
 Values for `what`:
  * `non-modifier`
  * `non-compose`
  * `all` (default)
 
-### .hotkeys('unblock', [what]) -> jQuery
+#### .hotkeys('unblock', [what]) -> jQuery
 
-### $.hotkeys.Hotkey()
+#### $.hotkeys.Hotkey()
 
-Hotkey constructor. The `$.hotkeys.parse\*` functions return Hotkey instances
+Hotkey constructor. The `$.hotkeys.parse*` functions return Hotkey instances
 (or arrays therof).
 
 Properties:
@@ -73,28 +73,28 @@ Properties:
  * `metaKey`: `Boolean`
  * `shiftKey`: `Boolean`
 
-### $.hotkeys.norm(hotkey) -> String
-### $.hotkeys.normSequence(hotkey) -> String
-### $.hotkeys.stringify(hotkey) -> String
-### $.hotkeys.parse(hotkey) -> $.hotkeys.Hotkey
-### $.hotkeys.parseSequence(hotkey) -> [$.hotkeys.Hotkey]
-### $.hotkeys.parseEvent(event) -> $.hotkeys.Hotkey
-### $.hotkeys.setLayout(layout)
+#### $.hotkeys.norm(hotkey) -> String
+#### $.hotkeys.normSequence(hotkey) -> String
+#### $.hotkeys.stringify(hotkey) -> String
+#### $.hotkeys.parse(hotkey) -> $.hotkeys.Hotkey
+#### $.hotkeys.parseSequence(hotkey) -> [$.hotkeys.Hotkey]
+#### $.hotkeys.parseEvent(event) -> $.hotkeys.Hotkey
+#### $.hotkeys.setLayout(layout)
 
 Sets the current keyboard layout. See `$.hotkeys.defaultLayout` for the format
 of `layout`.
 
-### $.hotkeys.getLayout(layout) -> Object
+#### $.hotkeys.getLayout(layout) -> Object
 
 Gets the current keyboard layout. See `$.hotkeys.defaultLayout` for the format
 of the returned object.
 
-### $.hotkeys.isValidAction(action) -> Boolean
+#### $.hotkeys.isValidAction(action) -> Boolean
 
 Check if `action` is a valid action name. An anction name may not be empty and
 only contain of english letters, numbers, `-` or `_`.
 
-### $.hotkeys.format(fmt, ...) -> String
+#### $.hotkeys.format(fmt, ...) -> String
 
 Interpolate format strings.
 
@@ -105,7 +105,7 @@ Formats:
  * `{{`: Insert `{`.
  * `}}`: Insert `}`.
 
-### $.hotkeys.defaultLayout
+#### $.hotkeys.defaultLayout
 
 Properties:
  * `keys`: `{Number: String}`
@@ -114,7 +114,7 @@ Properties:
  * `modifierKeys`: `{Number: String}`
  * `modifierAliases`: `{String: String}` (optional)
 
-### $.hotkeys.strings
+#### $.hotkeys.strings
 
 Properties:
  * `unmatched_left`
@@ -128,11 +128,11 @@ Properties:
  * `unknown_method`
  * `illegal_block_type`
 
-### .hotkeysConfig(config) -> jQuery
-### .hotkeysConfig('actions') -> {String: {"label": String, [defaultHotkey: String]}}
-### .hotkeysConfig('actions', actions) -> jQuery
-### .hotkeysConfig('action', name) -> jQuery
-### .hotkeysConfig('action', action) -> jQuery
+#### .hotkeysConfig(config) -> jQuery
+#### .hotkeysConfig('actions') -> {String: {"label": String, [defaultHotkey: String]}}
+#### .hotkeysConfig('actions', actions) -> jQuery
+#### .hotkeysConfig('action', name) -> jQuery
+#### .hotkeysConfig('action', action) -> jQuery
 
 Register or update action. Update means if the action already exists and
 has `label` or `defaultHotkey` set and the the new action hasn't, then the
@@ -144,5 +144,5 @@ clear them.
  * `label` (optional, defaults to `name`)
  * `defaultHotkey` (optional)
 
-### .hotkeysConfig('removeAction', name) -> jQuery
-### .hotkeysConfig('clear') -> jQuery
+#### .hotkeysConfig('removeAction', name) -> jQuery
+#### .hotkeysConfig('clear') -> jQuery
